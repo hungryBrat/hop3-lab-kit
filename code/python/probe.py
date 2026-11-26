@@ -1,4 +1,7 @@
-"""Session minute 0: find the port, ping IDs 1-4, read positions + offsets (reg 31), record them.
+"""Session minute 0: find the port, ping IDs 1-3, read positions + offsets (reg 31), record them.
+
+The gripper (ID 4) is dead: with gripper_enabled=false it gets one read-only ping, reported "dead/ignored",
+and never fails the probe. Nothing is written to any servo.
 
 python probe.py [--mock] [--port P]
 Writes session_data.json {port, servo_offsets_reg31} (other fields preserved) and logs/probe_<ts>.csv.
@@ -57,9 +60,10 @@ def main():
         bus.open(port, cfg["stream"]["baud"])
     except IOError as e:
         hc.die(str(e))
-    all_ids = bus.ids + [bus.gid]
+    all_ids = bus.ids + ([bus.gid] if bus.gripper_enabled else [])
     pings = bus.ping_all(all_ids)
     offsets = bus.read_offsets(all_ids)
+    grip_ping = None if bus.gripper_enabled else bus.ping_all([bus.gid])[bus.gid]
     rd, ok = {}, False
     for _ in range(10):
         rd, ok = bus.sync_read(all_ids)
@@ -85,6 +89,10 @@ def main():
               f"   {offsets[i] if offsets[i] is not None else '-'}")
         rows.append([i, pings[i] or "", "" if c is None else c, "" if s is None else f"{s:.3f}",
                      "" if th is None else f"{th:.3f}", "" if offsets[i] is None else offsets[i]])
+    if not bus.gripper_enabled:
+        state = "dead/ignored" if grip_ping is None else f"answered ping (model {grip_ping}) but ignored"
+        print(f" {bus.gid:2d}  gripper: {state} (gripper_enabled=false, never written, not required)")
+        rows.append([bus.gid, grip_ping or "", "", "", "", "ignored"])
     if len(s_joint) == 3:
         print(f"DH tip at present pose: {np.round(hc.fk_servo(s_joint, cfg), 1)} mm (config map)")
 

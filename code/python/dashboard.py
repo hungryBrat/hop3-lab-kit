@@ -2,6 +2,8 @@
 
 The control loop only ever calls DashLink.send(), which never blocks: samples go to a bounded queue drained by
 a sender thread; a full queue drops the frame. Use via run_traj.py --dashboard [--offscreen].
+Letter-B runs (meta name contains letterB or plane == front) get a front view (y right, z up, as seen from +X0)
+instead of the top view.
 """
 import multiprocessing as mp
 import queue
@@ -65,7 +67,15 @@ def dashboard_main(conn, cmd_path, cfg, offscreen, out_png, t_max):
     header, arr = hc.read_cmd(cmd_path)
     c = lambda n: hc.col(header, arr, n)
     xd, yd, zd = c("x_des"), c("y_des"), c("z_des")
-    xn, yn = c("x_nn"), c("y_nn")
+    xn, yn, zn = c("x_nn"), c("y_nn"), c("z_nn")
+    meta = hc.load_cmd_meta(cmd_path)
+    front = hc.is_letter_b(cmd_path, meta)
+    if front:
+        hd, vd, hn, vn, ih, iv = yd, zd, yn, zn, 1, 2
+        labels = ("y0 [mm]  (+y to the right)", "z0 [mm]", "front view (from +X0)", "desired B")
+    else:
+        hd, vd, hn, vn, ih, iv = xd, yd, xn, yn, 0, 1
+        labels = ("x0 [mm]", "y0 [mm]", "top view", "desired circle")
     s_cmd = np.column_stack([c("s1_deg"), c("s2_deg"), c("s3_deg")])
     t_max = t_max or float(c("t_s")[-1]) * 1.1
 
@@ -76,17 +86,23 @@ def dashboard_main(conn, cmd_path, cfg, offscreen, out_png, t_max):
     ax_z = fig.add_subplot(gs[0, 1])
     ax_j = [fig.add_subplot(gs[i + 1, 1], sharex=ax_z) for i in range(3)]
 
-    ax_xy.plot(xd, yd, "k-", lw=1.2, label="desired circle")
-    ax_xy.plot(xn, yn, "--", color="tab:orange", lw=1.0, label="NN-predicted NN(q_cmd)")
+    ax_xy.plot(hd, vd, "k-", lw=1.2, label=labels[3])
+    ax_xy.plot(hn, vn, "--", color="tab:orange", lw=1.0, label="NN-predicted NN(q_cmd)")
+    for nm, a, b in hc.segments(meta, len(hd)):
+        ax_xy.plot(hd[a], vd[a], "k^" if a == 0 else "k.", ms=6)
+        m = (a + b) // 2
+        left = hd[m] < np.mean(hd)
+        ax_xy.annotate(nm, (hd[m], vd[m]), fontsize=7, color="0.35", ha="right" if left else "left",
+                       xytext=(-6 if left else 6, 0), textcoords="offset points")
     trail, = ax_xy.plot([], [], "-", color="tab:blue", lw=1.4, label="live DH(q_meas)", animated=True)
     head, = ax_xy.plot([], [], "o", color="tab:blue", ms=6, animated=True)
     pad = 25.0
-    ax_xy.set_xlim(min(xd.min(), xn.min()) - pad, max(xd.max(), xn.max()) + pad)
-    ax_xy.set_ylim(min(yd.min(), yn.min()) - pad, max(yd.max(), yn.max()) + pad)
+    ax_xy.set_xlim(min(hd.min(), hn.min()) - pad, max(hd.max(), hn.max()) + pad)
+    ax_xy.set_ylim(min(vd.min(), vn.min()) - pad, max(vd.max(), vn.max()) + pad)
     ax_xy.set_aspect("equal", adjustable="datalim")
-    ax_xy.set_xlabel("x0 [mm]")
-    ax_xy.set_ylabel("y0 [mm]")
-    ax_xy.set_title("top view")
+    ax_xy.set_xlabel(labels[0])
+    ax_xy.set_ylabel(labels[1])
+    ax_xy.set_title(labels[2])
     ax_xy.grid(alpha=0.3)
     ax_xy.legend(loc="upper right", fontsize=8)
     status = ax_xy.text(0.02, 0.02, "", transform=ax_xy.transAxes, fontsize=9, family="monospace", animated=True)
@@ -158,8 +174,8 @@ def dashboard_main(conn, cmd_path, cfg, offscreen, out_png, t_max):
                 jg[j].set_data(T, g[:, j])
         if M:
             p, m = np.asarray(Pm), np.asarray(M)
-            trail.set_data(p[:, 0], p[:, 1])
-            head.set_data([p[-1, 0]], [p[-1, 1]])
+            trail.set_data(p[:, ih], p[:, iv])
+            head.set_data([p[-1, ih]], [p[-1, iv]])
             zm_line.set_data(Tm, p[:, 2])
             for j in range(3):
                 jm[j].set_data(Tm, m[:, j])

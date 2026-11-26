@@ -1,7 +1,9 @@
 """Automated tests for the execution stack (mock bus only). python test_exec.py [--quick]
 
-Generates data/test/cmd_test_circle.csv, then runs every tool in a temp sandbox root (HOP3_ROOT) so the real
-config.json / session_data.json / logs are never touched.
+Generates data/test/cmd_test_letterB.csv (analytic IK, front plane x=260) and data/test/cmd_test_circle.csv, then
+runs every tool in a temp sandbox root (HOP3_ROOT) so the real config.json / session_data.json / logs are never
+touched. Every mock write is audited: the dead gripper (ID 4) must never be written.
+The offscreen dashboard snapshot of the B run is copied to figures/dashboard_snapshot.png.
 """
 import argparse
 import csv
@@ -46,6 +48,59 @@ def gen_test_cmd(root, cfg, name="test_circle", centre=(240.0, 0.0, 40.0), R=50.
             "checks": {k: checks[k] for k in ("limits", "step", "zfloor", "finite")}, "placeholder": True}
     path.with_suffix(".json").write_text(json.dumps(meta, indent=2) + "\n")
     return path
+
+
+def min_jerk(n_steps):
+    tau = np.arange(1, n_steps + 1) / n_steps
+    return 10 * tau ** 3 - 15 * tau ** 4 + 6 * tau ** 5
+
+
+def letter_b_path(cfg, x_plane=260.0, zc=150.0, H=100.0, v_max=15.0, dwell=0.4, yc=0.0):
+    """-> t, p (N,3), segments. Spine up at y=yc-H/8, top then bottom semicircle (radius H/4) toward +y.
+    Per-segment min-jerk (peak speed 1.875 L/T = v_max, T rounded up to the 50 Hz grid), dwell after each."""
+    rate = cfg["stream"]["rate_hz"]
+    r, ys = H / 4, yc - H / 8
+    z0, z1 = zc - H / 2, zc + H / 2
+
+    def spine(u):
+        return np.column_stack([np.full_like(u, ys), z0 + (z1 - z0) * u])
+
+    def bump(zcen):
+        return lambda u: np.column_stack([ys + r * np.cos(np.pi / 2 - np.pi * u), zcen + r * np.sin(np.pi / 2 - np.pi * u)])
+
+    strokes = [("spine_up", H, spine), ("top_bump", np.pi * r, bump(z1 - r)), ("bottom_bump", np.pi * r, bump(z0 + r))]
+    yz = [spine(np.zeros(1))]
+    segs, k = [], 0
+    n_dwell = int(round(dwell * rate))
+    for nm, L, f in strokes:
+        n = int(np.ceil(1.875 * L / v_max * rate - 1e-9))
+        pts = f(min_jerk(n))
+        segs.append({"name": nm, "k_start": k, "k_end": k + n})
+        yz += [pts, np.repeat(pts[-1:], n_dwell, axis=0)]
+        k += n + n_dwell
+    yz = np.vstack(yz)
+    t = np.arange(len(yz)) / rate
+    p = np.column_stack([np.full(len(yz), x_plane), yz])
+    return t, p, segs
+
+
+def gen_letter_b_cmd(root, cfg, name="test_letterB", **kw):
+    t, p, segs = letter_b_path(cfg, **kw)
+    arr = safety.build_cmd(t, p, cfg)
+    d = root / "data" / "test"
+    d.mkdir(parents=True, exist_ok=True)
+    path = d / f"cmd_{name}.csv"
+    hc.write_cmd(path, arr)
+    errors, checks = safety.validate_arrays(hc.CMD_HEADER, arr, cfg)
+    lb = {"x_plane": 260.0, "zc": 150.0, "H": 100.0, "yc": 0.0, **kw}
+    meta = {"name": name, "plane": "front", "x_plane_mm": lb["x_plane"], "centre_yz": [lb["yc"], lb["zc"]],
+            "H": lb["H"], "centre": [lb["x_plane"], lb["yc"], lb["zc"]], "R": lb["H"] / 4, "T_s": float(t[-1]),
+            "rate_hz": cfg["stream"]["rate_hz"], "n_rows": len(arr), "map_used": cfg["map"],
+            "model_source": "DH_STANDIN_TEST (x_nn = DH FK)",
+            "checks": {k: checks[k] for k in ("limits", "step", "zfloor", "finite")}, "placeholder": True,
+            "segments": segs, "test_file": True}
+    path.with_suffix(".json").write_text(json.dumps(meta, indent=2) + "\n")
+    return path, errors
 
 
 def run(args, env, timeout=300):
@@ -95,6 +150,19 @@ def test_bus_guards(cfg):
     b.set_torque(1, False)
     b.set_torque(1, True)
     check("bus: only 0/1 ever written to reg 40", all(v in (0, 1) for _, a, v in b.writes if a == 40))
+    gid = b.gid
+    check("bus: gripper disabled in config", not hc.gripper_enabled(cfg) and b.ids == [1, 2, 3])
+    check("bus: ping_all/read_offsets default to ids 1-3", sorted(b.ping_all()) == [1, 2, 3]
+          and sorted(b.read_offsets()) == [1, 2, 3])
+    check("mock: dead gripper does not answer ping", b.ping_all([gid])[gid] is None)
+    check("bus: hold_gripper refused", raises(lambda: b.hold_gripper(), safety.SafetyError))
+    check("bus: torque write to gripper refused", raises(lambda: b.set_torque(gid, True), safety.SafetyError))
+    check("bus: torque-limit write to gripper refused", raises(lambda: b.set_torque_limit(gid, 300), safety.SafetyError))
+    check("bus: raw goal write to gripper refused", raises(lambda: b._write_goals({gid: 2048}, 200, 20), safety.SafetyError))
+    check("bus: raw reg-40 write to gripper refused", raises(lambda: b._write1(gid, 40, 0), safety.SafetyError))
+    b.torque_on_safely()
+    check("mock: no write ever recorded for the gripper", b.writes and all(w[0] != gid for w in b.writes),
+          f"{len(b.writes)} writes, ids {sorted({w[0] for w in b.writes})}")
 
 
 def main():
@@ -109,21 +177,41 @@ def main():
     print("== bus guards")
     test_bus_guards(cfg)
 
-    print("== test command file")
+    print("== test command files")
     cmd = gen_test_cmd(hc.ROOT, cfg)
     rc, out = run(["safety.py", str(cmd)], dict(os.environ))
     check(f"generated {hc.rel(cmd)} passes safety", rc == 0, out.strip().splitlines()[0])
+    bcmd, berr = gen_letter_b_cmd(hc.ROOT, cfg)
+    rc, out = run(["safety.py", str(bcmd)], dict(os.environ))
+    check(f"generated {hc.rel(bcmd)} passes safety", rc == 0 and not berr, out.strip().splitlines()[0])
+    bh, ba = hc.read_cmd(bcmd)
+    bmeta = json.loads(bcmd.with_suffix(".json").read_text())
+    p_dh = hc.fk_servo(hc.counts_to_deg(ba[:, 5:8], cfg), cfg)
+    p_des = ba[:, 11:14]
+    check("letter B: header per CONTRACTS, 3 segments in meta", bh == hc.CMD_HEADER
+          and [sg["name"] for sg in bmeta["segments"]] == ["spine_up", "top_bump", "bottom_bump"])
+    check("letter B: plane x=260, y in [-12.5, 12.5], z in [100, 200]",
+          np.allclose(p_des[:, 0], 260) and np.allclose([p_des[:, 1].min(), p_des[:, 1].max(), p_des[:, 2].min(),
+                                                  p_des[:, 2].max()], [-12.5, 12.5, 100, 200], atol=0.01))
+    spd = np.linalg.norm(np.diff(p_des, axis=0), axis=1) * cfg["stream"]["rate_hz"]
+    check("letter B: peak speed <= 15 mm/s, closed path", spd.max() <= 15.0 + 1e-6
+          and np.linalg.norm(p_des[-1] - p_des[0]) < 1e-9, f"v_max {spd.max():.2f} mm/s")
+    check("letter B: DH(counts) within 1 mm of desired (IK + quantisation)",
+          np.abs(p_dh - p_des).max() < 1.0, f"max {np.abs(p_dh - p_des).max():.3f} mm")
 
     tmp = Path(tempfile.mkdtemp(prefix="hop3_test_"))
     for rel in ("config.json", "session/session_data.json", "data/fiducials.json",
-                "data/test/cmd_test_circle.csv", "data/test/cmd_test_circle.json"):
+                "data/test/cmd_test_circle.csv", "data/test/cmd_test_circle.json",
+                "data/test/cmd_test_letterB.csv", "data/test/cmd_test_letterB.json"):
         src = hc.ROOT / rel
         if src.exists():
             (tmp / rel).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, tmp / rel)
     (tmp / "figures").mkdir()
-    env = dict(os.environ, HOP3_ROOT=str(tmp))
-    tcmd = tmp / "data" / "test" / "cmd_test_circle.csv"
+    writelog = tmp / "mock_writes.jsonl"
+    env = dict(os.environ, HOP3_ROOT=str(tmp), HOP3_MOCK_WRITELOG=str(writelog))
+    ccmd = tmp / "data" / "test" / "cmd_test_circle.csv"
+    tcmd = tmp / "data" / "test" / "cmd_test_letterB.csv"
     n_rows = len(hc.read_cmd(tcmd)[1])
     mlogs = tmp / "logs" / "mock"
     real_cfg_text = (tmp / "config.json").read_text()
@@ -131,10 +219,13 @@ def main():
     print(f"   sandbox {tmp}")
 
     if not args.quick:
-        print("== mock stream run")
+        print("== mock stream run (letter B)")
         rc, out = run(["run_traj.py", str(tcmd), "--mode", "stream", "--mock", "--seed", "1"], env)
-        log = latest(mlogs, "run_test_circle_*.csv")
+        log = latest(mlogs, "run_test_letterB_*.csv")
         check("stream run exit 0", rc == 0, out.strip().splitlines()[-1] if out.strip() else "")
+        check("segment progress printed for all 3 segments",
+              all(f"segment {j}/3 {nm}" in out for j, nm in ((1, "spine_up"), (2, "top_bump"), (3, "bottom_bump"))))
+        check("run_traj reports gripper dead/ignored", "gripper: dead/ignored" in out)
         if log:
             hdr, a = read_log(log)
             meta = json.loads(log.with_suffix(".json").read_text())
@@ -144,6 +235,8 @@ def main():
             rate = meta["achieved_rate_hz"] or 0
             check("achieved rate >= 45 Hz", rate >= 45, f"{rate:.2f} Hz, dropped {meta['dropped_replies']}")
             check("offsets unchanged + mock flag", meta["offsets_unchanged"] and meta["mock"] is True)
+            check("run meta: written_ids == [1,2,3], segments carried", meta.get("written_ids") == [1, 2, 3]
+                  and len(meta.get("segments") or []) == 3, f"written_ids {meta.get('written_ids')}")
             check("logged goals == cmd counts",
                   np.array_equal(a[:, 2:5], hc.read_cmd(tcmd)[1][:, 5:8]))
             ok = a[:, 14] == 1
@@ -152,8 +245,9 @@ def main():
             print(f"   stream: {out.strip().splitlines()[-1]}")
         print("== mock wait run")
         rc, out = run(["run_traj.py", str(tcmd), "--mode", "wait", "--mock", "--seed", "2"], env)
-        logs = sorted(mlogs.glob("run_test_circle_*.csv"))
+        logs = sorted(mlogs.glob("run_test_letterB_*.csv"))
         check("wait run exit 0", rc == 0, out.strip().splitlines()[-1] if out.strip() else "")
+        check("wait mode prints segment progress", "segment 3/3 bottom_bump" in out)
         if len(logs) >= 2:
             hdr, a = read_log(logs[-1])
             meta = json.loads(logs[-1].with_suffix(".json").read_text())
@@ -162,6 +256,18 @@ def main():
                   f"{len(ks)} targets")
             check("wait mode offsets unchanged, no settle timeouts",
                   meta["offsets_unchanged"] and meta.get("wait_timeouts") == 0, f"timeouts {meta.get('wait_timeouts')}")
+
+        print("== mock stream run with offscreen dashboard (front view)")
+        snap = tmp / "figures" / "dashboard_snapshot.png"
+        rc, out = run(["run_traj.py", str(tcmd), "--mode", "stream", "--mock", "--seed", "3", "--dashboard",
+                       "--offscreen"], env)
+        check("dashboard run exit 0 + snapshot written", rc == 0 and snap.exists(),
+              out.strip().splitlines()[-1] if out.strip() else "")
+        if snap.exists():
+            dst = hc.ROOT / "figures" / "dashboard_snapshot.png"
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(snap, dst)
+            print(f"   snapshot -> {hc.rel(dst)}")
 
     print("== dry run + unsafe file refused")
     rc, out = run(["run_traj.py", str(tcmd), "--mock", "--dry"], env)
@@ -175,14 +281,14 @@ def main():
     rc, out = run(["run_traj.py", str(badp), "--mock"], env)
     check("run_traj refuses a file with a 10 deg jump", rc == 1 and "SAFETY FAIL" in out)
 
-    print("== retarget round trip (backup-centre circle, valid under both J3 signs)")
-    rt = gen_test_cmd(tmp, cfg, "rt", (270.0, 0.0, 170.0), 40.0)
+    print("== retarget round trip (letter B, valid under both J3 signs)")
+    rt, _ = gen_letter_b_cmd(tmp, cfg, "rt")
     orig = hc.read_cmd(rt)[1]
     hc.set_config_signs(1, 1, tmp / "config.json")
-    before = tcmd.read_bytes()
-    rc, out = run(["retarget_cmds.py", str(tcmd)], env)
-    check("primary circle under sigma3=+1 refused, file untouched",
-          rc == 1 and "[limits]" in out and tcmd.read_bytes() == before)
+    before = ccmd.read_bytes()
+    rc, out = run(["retarget_cmds.py", str(ccmd)], env)
+    check("low circle under sigma3=+1 refused, file untouched",
+          rc == 1 and "[limits]" in out and ccmd.read_bytes() == before)
     rc, out = run(["safety.py", str(rt)], env)
     check("after sign flip, stale file is rejected ([map])", rc == 1 and "[map]" in out)
     rc, out = run(["retarget_cmds.py", str(rt)], env)
@@ -203,9 +309,11 @@ def main():
     rc, out = run(["probe.py", "--mock", "--yes"], env)
     ms = mlogs / "session_data.json"
     check("probe exit 0", rc == 0 and "PROBE OK" in out, out.strip().splitlines()[-1])
+    check("probe reports ID 4 dead/ignored without failing", "gripper: dead/ignored" in out)
     sess = json.loads(ms.read_text()) if ms.exists() else {}
-    check("probe wrote port + offsets to mock session",
-          sess.get("port") == "mock" and sess.get("servo_offsets_reg31", {}).get("2") == -7)
+    check("probe wrote port + offsets (ids 1-3 only) to mock session",
+          sess.get("port") == "mock" and sess.get("servo_offsets_reg31", {}).get("2") == -7
+          and sorted(sess.get("servo_offsets_reg31", {})) == ["1", "2", "3"])
     check("probe csv written", latest(mlogs, "probe_*.csv") is not None)
 
     print("== convention_test --mock (scripted: sigma1=+1, sigma3=+1)")
@@ -219,9 +327,11 @@ def main():
     mc = json.loads((mlogs / "config.json").read_text()) if (mlogs / "config.json").exists() else {}
     check("confirmed sign update lands in logs/mock/config.json", mc.get("map", {}).get("theta3", {}).get("sign") == 1)
     check("real (sandbox) config.json untouched", (tmp / "config.json").read_text() == real_cfg_text)
-    check("decision = BACKUP for sigma3=+1", "DECISION: sigma3 = +1" in out and "BACKUP" in out)
+    check("decision for sigma3=+1 = retarget + letter B (no backup)",
+          "DECISION: sigma3 = +1" in out and "cmd_letterB" in out and "no backup" in out)
     rc, out = run(["convention_test.py", "--mock", "--yes"], env)
-    check("convention --yes -> sigma3=-1 -> PRIMARY", rc == 0 and "PRIMARY" in out and "already match" in out)
+    check("convention --yes -> sigma3=-1 -> PRIMARY letter B", rc == 0 and "PRIMARY data/cmd_letterB.csv" in out
+          and "already match" in out)
     rc, out = run(["convention_test.py", "--mock", "--answers", "n"], env)
     check("declining a move stops without motion", rc == 2 and "not confirmed" in out)
 
@@ -239,6 +349,14 @@ def main():
     check("touchoff_log recorded in mock session", str(sess.get("touchoff_log", "")).startswith("logs/mock/touchoff_"))
     check("real (sandbox) session_data.json untouched",
           (tmp / "session" / "session_data.json").read_text() == real_sess_text)
+
+    print("== write audit (every mock bus in every subprocess)")
+    wl = [json.loads(x) for x in writelog.read_text().splitlines()] if writelog.exists() else []
+    ids_w = sorted({w[0] for w in wl})
+    check("mock write log non-empty and only ids 1-3 ever written (gripper never)", wl and ids_w == [1, 2, 3],
+          f"{len(wl)} writes, ids {ids_w}")
+    check("reg 40 only 0/1, no EEPROM register written", all(w[1] in (40, 42, 48) for w in wl)
+          and all(w[2] in (0, 1) for w in wl if w[1] == 40))
 
     n_fail = sum(not ok for _, ok in RESULTS)
     print(f"\n{len(RESULTS) - n_fail}/{len(RESULTS)} passed")

@@ -1,14 +1,14 @@
 {
-  "name": "inair_z100",
+  "name": "letterB_outside",
   "centre": [
-    240,
-    0,
-    130
+    80,
+    150,
+    150
   ],
-  "R": 50,
-  "T_s": 20,
+  "R": 25,
+  "T_s": 35.74,
   "rate_hz": 50,
-  "n_rows": 1001,
+  "n_rows": 1788,
   "map_used": {
     "theta1": {
       "sign": 1,
@@ -32,9 +32,34 @@
     "finite": true
   },
   "max_step_deg": 0.17578125,
-  "min_z_mm": 129.67579773216124,
+  "min_z_mm": 99.915285097586548,
   "z_floor_mm": 20,
   "placeholder": false,
-  "leave_box": false,
-  "zc": 130
+  "H": 100,
+  "corners_k": [
+    70,
+    695,
+    1206,
+    1717
+  ],
+  "leave_box": true,
+  "plane": "front",
+  "segments": [
+    {
+      "name": "spine",
+      "k_start": 70,
+      "k_end": 695
+    },
+    {
+      "name": "top",
+      "k_start": 715,
+      "k_end": 1206
+    },
+    {
+      "name": "bottom",
+      "k_start": 1226,
+      "k_end": 1717
+    }
+  ],
+  "timed": true
 }

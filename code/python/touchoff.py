@@ -2,6 +2,7 @@
 
 python touchoff.py [--mock] [--port P] [--reps 3]
 Writes logs/touchoff_<ts>.csv (point_id,rep,pos_c1,pos_c2,pos_c3) and session_data.json touchoff_log.
+Not part of the letter-B (in-air, no paper) session; kept for completeness. Touches IDs 1-3 only.
 """
 import argparse
 import csv

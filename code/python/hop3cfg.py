@@ -63,6 +63,44 @@ def gripper_id(cfg):
     return cfg["servo_ids"]["gripper"]
 
 
+def gripper_enabled(cfg):
+    # Missing key = disabled: the gripper servo (ID 4) is dead and must never be written.
+    return bool(cfg.get("gripper_enabled", False))
+
+
+def active_ids(cfg):
+    """Servo IDs that are commanded and must reply. Always exactly the three arm joints."""
+    ids = [int(i) for i in cfg.get("servo_ids_active", joint_ids(cfg))]
+    if sorted(ids) != sorted(joint_ids(cfg)):
+        raise ValueError(f"servo_ids_active {ids} must be exactly the joint ids {joint_ids(cfg)}")
+    return joint_ids(cfg)
+
+
+def writable_ids(cfg):
+    return set(active_ids(cfg)) | ({gripper_id(cfg)} if gripper_enabled(cfg) else set())
+
+
+def load_cmd_meta(cmd_path):
+    p = Path(cmd_path).with_suffix(".json")
+    return json.loads(p.read_text()) if p.exists() else {}
+
+
+def is_letter_b(cmd_path, meta=None):
+    meta = load_cmd_meta(cmd_path) if meta is None else meta
+    return "letterb" in str(meta.get("name", Path(cmd_path).stem)).lower() or meta.get("plane") == "front"
+
+
+def segments(meta, n_rows=None):
+    """meta['segments'] -> [(name, k_start, k_end)] sorted by k_start (k_end inclusive), [] if absent."""
+    out = []
+    for s in meta.get("segments") or []:
+        out.append((str(s["name"]), int(s["k_start"]), int(s["k_end"])))
+    out.sort(key=lambda x: x[1])
+    if n_rows is not None:
+        out = [x for x in out if 0 <= x[1] < n_rows]
+    return out
+
+
 def signs_offsets(cfg):
     m = cfg["map"]
     return (np.array([m[t]["sign"] for t in THETAS], float),
@@ -127,6 +165,13 @@ SESSION_FIELDS = ["date", "port", "usb_chip_lsusb", "psu_voltage_V", "servo_offs
                   "notes"]
 
 
+def _default_zc(cfg):
+    tr = cfg["trajectories"]
+    if cfg.get("primary_trajectory") == "letterB" and "letterB" in tr:
+        return float(tr["letterB"]["centre_yz"][1])
+    return float(tr["primary"]["z_family"][0])
+
+
 class Session:
     """values: session fields with defaults filled; placeholder[field] True where the default was used."""
 
@@ -135,7 +180,7 @@ class Session:
         nominal = fk_servo(NEUTRAL_S, cfg)[2]
         defaults = {"port": cfg.get("port"), "sigma1": int(sign[0]), "sigma3": int(sign[2]),
                     "neutral_tip_height_mm": float(nominal), "paper_plane_z_mm": 0.0, "pen_offset_mm": 0.0,
-                    "z_c_mm": float(cfg["trajectories"]["primary"]["z_family"][0])}
+                    "z_c_mm": _default_zc(cfg)}
         self.raw = raw
         self.values, self.placeholder = {}, {}
         for k in SESSION_FIELDS:

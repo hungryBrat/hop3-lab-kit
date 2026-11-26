@@ -1,14 +1,14 @@
 {
-  "name": "primary_z040",
+  "name": "letterB",
   "centre": [
-    240,
+    260,
     0,
-    40
+    150
   ],
-  "R": 50,
-  "T_s": 20,
+  "R": 25,
+  "T_s": 35.74,
   "rate_hz": 50,
-  "n_rows": 1001,
+  "n_rows": 1788,
   "map_used": {
     "theta1": {
       "sign": 1,
@@ -31,10 +31,35 @@
     "zfloor": true,
     "finite": true
   },
-  "max_step_deg": 0.17578125,
-  "min_z_mm": 39.663616226285,
+  "max_step_deg": 0.087890625,
+  "min_z_mm": 99.868349149960437,
   "z_floor_mm": 20,
   "placeholder": false,
+  "H": 100,
+  "corners_k": [
+    70,
+    695,
+    1206,
+    1717
+  ],
   "leave_box": false,
-  "zc": 40
+  "plane": "front",
+  "segments": [
+    {
+      "name": "spine",
+      "k_start": 70,
+      "k_end": 695
+    },
+    {
+      "name": "top",
+      "k_start": 715,
+      "k_end": 1206
+    },
+    {
+      "name": "bottom",
+      "k_start": 1226,
+      "k_end": 1717
+    }
+  ],
+  "timed": true
 }

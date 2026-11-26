@@ -5,6 +5,14 @@ What this is: everything needed to collect the robot data for BITS F327 HOP-3
 come back with data, not to debug. Analysis, NN training and the report happen
 back home; nothing here needs MATLAB.
 
+THE TASK CHANGED (2026-11-27):
+  - The tip traces a capital letter B IN THE AIR, in the vertical front plane
+    x = 260 mm (spine, then top bump, then bottom bump; ~36 s per run).
+  - NO pen, NO paper, NO touch-off, NO fiducial sheet, NO platform.
+  - The GRIPPER servo (ID 4) IS DEAD. Leave it exactly as it is: do not unplug
+    or power-cycle it, never command it. Every tool only uses IDs 1-3; probe
+    shows ID 4 as "dead/ignored" and that is fine.
+
 1. SETUP (5 min)
    bash setup.sh                 -> must print SETUP OK
    Plug in the arm. If no /dev/ttyACM* or /dev/ttyUSB*: see CHECKLIST section 2
@@ -12,26 +20,31 @@ back home; nothing here needs MATLAB.
    P=.venv/bin/python ; C=code/python
 
 2. FOLLOW CHECKLIST.txt TOP TO BOTTOM. Tick boxes, write numbers on paper too.
-   Order: probe -> convention test (signs) -> tape measurements -> hand-guided
-   poses -> touch-off -> runs (in-air first, then pen-down) -> photos -> backup copy.
+   Order: probe -> convention test (signs) -> retarget -> B runs in air x3
+   -> outside-region B run -> static accuracy poses -> hand-guided poses
+   (tape-measured tip xyz) -> tape link lengths -> photos -> backup copy.
+   Optional: phone video of every run with the ArUco board (CHECKLIST section 4).
 
-3. THE ONE DECISION YOU MUST MAKE
-   convention_test.py prints the decision at the end:
-     sigma3 = -1  -> run data/cmd_primary_z<NNN>.csv (NNN = paper height, mm)
-     sigma3 = +1  -> run ONLY data/cmd_backup.csv (in air). Do not run primary.
-   After the test, run retarget_cmds.py on the command files (CHECKLIST says how).
+3. AFTER THE CONVENTION TEST (always)
+   $P $C/retarget_cmds.py data/cmd_letterB.csv data/cmd_letterB_outside.csv
+   cmd_letterB.csv works for both sigma3 signs (no backup trajectory).
+   cmd_letterB_outside.csv only works for sigma3 = -1; if its retarget says
+   FAIL, skip the outside run and write that down.
+   Then: $P $C/run_traj.py data/cmd_letterB.csv --mode stream --dashboard
+   (first run add --torque-limit 400; if it stutters use --mode wait).
 
 4. IF THE MAIN SCRIPTS BREAK, use the fallback (needs only the servo SDK):
    $P kit_capture.py probe | torque on|off | read 30 LABEL | pose LABEL
-                    | goto S1 S2 S3 | play data/cmd_<name>.csv
-   It logs to logs/. Write down in session/notes what you used.
+                    | goto S1 S2 S3 | play data/cmd_letterB.csv
+   It only touches IDs 1-3 and logs to logs/. --gripper is refused on purpose.
+   Write down in session/notes what you used.
 
 5. RULES
    - Hand near the power switch; check the arm path is clear before every move.
    - Never press servo "Set Middle"/calibration buttons.
+   - Never command or power-cycle the gripper.
    - Ctrl-C/ESC aborts (arm holds position).
-   - Blue/black pen only. Keep the gripper at ONE value all session and write it down.
-   - Video every run with the laptop screen in frame; overhead photo of every sheet.
+   - Video every run if you can (phone at +X0, 60 fps, laptop screen in frame).
 
 6. BRING BACK (this matters most)
    The whole folder: logs/, session/, photos/, video/ + the paper checklist with

@@ -3,6 +3,8 @@
 python run_traj.py data/cmd_<name>.csv --mode stream|wait [--mock] [--dashboard [--offscreen]]
                    [--port P] [--torque-limit N] [--dry]
 ESC or Ctrl-C: hold present position, torque stays on, log closed cleanly (no return to neutral).
+Only IDs 1-3 are pinged/commanded; the gripper (ID 4) is dead and is never written (config gripper_enabled=false).
+If the command meta has `segments`, progress is printed at each segment start.
 """
 import argparse
 import json
@@ -92,10 +94,13 @@ def main():
     st = cfg["stream"]
     rate = st["rate_hz"]
     print(f"safety PASS: {cmd_path} ({n} rows, {n / rate:.1f} s at {rate} Hz)")
-    meta_path = cmd_path.with_suffix(".json")
-    cmd_meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
+    cmd_meta = hc.load_cmd_meta(cmd_path)
     if cmd_meta.get("placeholder"):
         print("NOTE: command meta says placeholder=true")
+    segs = hc.segments(cmd_meta, n)
+    if segs:
+        print("segments: " + "  ".join(f"{nm} k{a}-{b} ({(b - a + 1) / rate:.1f} s)" for nm, a, b in segs))
+    seg_at = {a: (j, nm, b) for j, (nm, a, b) in enumerate(segs)}
 
     bus = make_bus(cfg, mock=args.mock, seed=args.seed)
     port = "mock" if args.mock else (args.port or hc.load_session(cfg).values["port"] or cfg["port"])
@@ -105,7 +110,8 @@ def main():
         hc.die(str(e))
     pings = bus.ping_all()
     missing = [i for i in bus.ids if pings[i] is None]
-    print(f"port {port}  ping: " + "  ".join(f"id{i}={'ok' if m else 'NO REPLY'}" for i, m in pings.items()))
+    print(f"port {port}  ping: " + "  ".join(f"id{i}={'ok' if m else 'NO REPLY'}" for i, m in pings.items())
+          + ("" if bus.gripper_enabled else f"  (id{bus.gid} gripper: dead/ignored, never written)"))
     if missing:
         hc.die(f"joint servo(s) {missing} did not answer ping: check power/cables/port (cheatsheet)")
     offsets0 = bus.read_offsets()
@@ -160,13 +166,17 @@ def main():
         return hc.counts_to_deg([rd[i]["pos"] for i in ids], cfg) if ok else None
 
     t_stream = [None, None]
+
+    def seg_progress(k, t):
+        if k in seg_at:
+            j, nm, b = seg_at[k]
+            print(f"  segment {j + 1}/{len(segs)} {nm}: k {k}-{b}  t={t:6.2f}s  (cmd t {arr[k, 1]:.2f}s)", flush=True)
     try:
         with KeyWatch() as kw:
             if args.torque_limit:
                 for i in ids:
                     bus.set_torque_limit(i, args.torque_limit)
             bus.torque_on_safely()
-            bus.hold_gripper()
             print("approaching row 0 ...")
             if not move_slow(bus, goals_s[0], APPROACH_DEG_S, abort=kw.esc):
                 print("WARNING: approach did not fully settle (MOVING!=0 or >3 counts off); continuing")
@@ -187,6 +197,8 @@ def main():
                         raise Abort("ESC")
                     gc = goals_c[k]
                     tw = time.perf_counter() - t0
+                    if segs:
+                        seg_progress(k, tw)
                     bus.sync_write(dict(zip(ids, gc.tolist())), st["speed"], st["acc"], cfg["max_step_deg"])
                     rd, ok = bus.sync_read()
                     log(tw, k, gc, rd, ok)
@@ -201,9 +213,12 @@ def main():
             else:
                 last_dash = [0.0]
                 n_timeouts = 0
+                seg_starts = sorted(seg_at)
                 for k in idx:
                     if kw.esc():
                         raise Abort("ESC")
+                    while segs and seg_starts and seg_starts[0] <= k:
+                        seg_progress(seg_starts.pop(0), time.perf_counter() - t0)
                     gc = goals_c[k]
                     bus.sync_write(dict(zip(ids, gc.tolist())), st["speed"], st["acc"])
 
@@ -238,7 +253,9 @@ def main():
             achieved = None
         meta.update(stats, offsets_reg31_end=offsets1, offsets_unchanged=unchanged, achieved_rate_hz=achieved,
                     dropped_replies=stats["comm_fail_reads"], mock_dropped=getattr(bus, "dropped", None),
-                    dashboard_dropped_frames=dash.dropped if dash else None, log_csv=hc.rel(log_path))
+                    dashboard_dropped_frames=dash.dropped if dash else None, log_csv=hc.rel(log_path),
+                    written_ids=sorted(bus.written_ids), gripper_enabled=bus.gripper_enabled,
+                    segments=cmd_meta.get("segments"))
         log_path.with_suffix(".json").write_text(json.dumps(meta, indent=2) + "\n")
         bus.close()
         if dash:

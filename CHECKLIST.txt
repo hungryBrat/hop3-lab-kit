@@ -1,14 +1,18 @@
 HOP-3 ROBOT SESSION CHECKLIST  (BITS F327, ST3215 3-DOF arm)  -- ONLY ONE SESSION
+TASK: tip traces a capital B IN THE AIR (front plane x = 260 mm, ~36 s per run).
+NO pen, NO paper, NO touch-off, NO fiducial sheet, NO platform.
+GRIPPER (ID 4) IS DEAD: do not unplug / power-cycle it, never command it. Tools use IDs 1-3 only.
 Run from kit root.  P=.venv/bin/python  C=code/python.  Add --mock to rehearse.
 Date ______  Team ______________  Start time ______  Port ______  PSU V ______
 
 1. BRING
 [ ] Laptop charged + charger        [ ] USB cable (+ USB-C adapter)
-[ ] Fiducial sheet printed at 100%, 3+ copies. Ruler-check the 100 mm
-    bar: measured = ________ mm
-[ ] Blue/black felt-tip pen (NO red)  [ ] Tape  [ ] Steel ruler + measuring tape
-[ ] Book stack / box for platform     [ ] Phone + stand (video + photos)
-[ ] Pen drive                         [ ] This checklist + pen
+[ ] Steel ruler + measuring tape    [ ] Masking tape (for the +X0 arrow)
+[ ] Phone + stand (video + photos)  [ ] Pen drive
+[ ] This checklist + pen (to write numbers)
+[ ] OPTIONAL video ground truth: data/video_board.pdf printed at 100 %
+    (ruler-check the 100 mm bar: ______ mm), window cut out, stiff backing
+    (cardboard) + tape/clamp; bright ORANGE (or green/pink) tape/sticker for the tip
 
 2. SETUP (lab laptop, at minute 0)
 [ ] bash setup.sh   (venv + ftservo-python-sdk)   [ ] mkdir -p photos video session
@@ -19,71 +23,84 @@ Date ______  Team ______________  Start time ______  Port ______  PSU V ______
 [ ] Permission denied -> groups lists dialout? else (last resort)
       sudo chmod a+rw /dev/ttyACM0   (or /dev/ttyUSB0)
 [ ] PSU voltage label: ______ V (12 V vs 7.4 V) -> write in session/notes
-[ ] Pings fail: PSU on? jumper on A? daisy-chain cable? baud 1M? ESP32 board?
-[ ] NO MATLAB on lab laptop: raise paper with books so its height above the BASE BOTTOM
-    is 40, 60, 80, 100 or 120 mm (ruler!) and use data/cmd_primary_z<that>.csv.
-    Pen tip pressed ~2 mm: set the stack ~2 mm higher than the file z.
+[ ] IDs 1-3 pings fail: PSU on? jumper on A? daisy-chain cable? baud 1M? ESP32 board?
+    (ID 4 not answering is EXPECTED - dead gripper. Leave it alone.)
 
 3. DATA TO CAPTURE  (command -> where it lands)
 [ ] Probe: $P $C/probe.py [--port DEV]  -> logs/probe_<ts>.csv, session port
-    + servo_offsets_reg31. Needs ids 1-4 ok + PROBE OK.  (fallback: kit_capture.py probe)
-[ ] Gripper servo value used (s4) = ________  (record it; keep it fixed all session)
+    + servo_offsets_reg31. Needs ids 1-3 ok + PROBE OK; "4 gripper: dead/ignored"
+    is fine.  (fallback: $P kit_capture.py probe)
 [ ] Convention test: $P $C/convention_test.py  (answer y/N per move)
       neutral tip height by tape = ______ mm (DH 398.6)   tape arrow +X0 on table
       sigma1 = ____ (s1->110, CCW from above = +1)
       sigma3 = ____ (s3->200, tilts toward +X0 = -1, away = +1)
       -> session/ (sigma1, sigma3, neutral_tip_height_mm); may edit config.json
-[ ] $P $C/retarget_cmds.py data/cmd_*.csv   (sigma3=-1 -> primary; +1 -> backup;
-    FAIL rows on the non-chosen family are expected)
+[ ] Retarget (ALWAYS, after the convention test):
+      $P $C/retarget_cmds.py data/cmd_letterB.csv data/cmd_letterB_outside.csv
+      letterB must say OK (valid for both sigma3 signs, no backup needed).
+      letterB_outside: OK only if sigma3 = -1. If FAIL -> skip the outside run, note it.
 [ ] FALLBACK convention (if script fails): kit_capture.py goto 90 180 180 ;
     goto 90 200 180 ; goto 110 180 180 ; goto 90 180 200  -- photo each pose
 [ ] Photos: arm at neutral + each convention pose (photos/)
-[ ] Link tape measurements (base to joint, joint to joint):
-      d1 = _____  L2 = _____  L3 = _____  gripper tip length (at s4 above) = _____ mm
-[ ] Hand-guided poses: kit_capture.py torque off ; for ~10 diverse poses:
+[ ] (optional video GT) set up NOW, before the runs - see section 4
+[ ] Before the first run:
+      $P $C/safety.py data/cmd_letterB.csv                       PASS required
+      $P $C/run_traj.py data/cmd_letterB.csv --mode stream --dry   (read-only)
+[ ] B run #1 (in air, low torque):
+      $P $C/run_traj.py data/cmd_letterB.csv --mode stream --torque-limit 400 --dashboard
+      -> logs/run_letterB_<ts>.csv ; rate ~50 Hz, dropped replies small
+      Dashboard front view should show a B (y right, z up). Stutter -> --mode wait
+      (fallback of the fallback: $P kit_capture.py play data/cmd_letterB.csv)
+[ ] B run #2  (same command without --torque-limit)   log ts ______
+[ ] B run #3  (repeatability: 3 runs, same file)       log ts ______
+[ ] (if time) one wait-mode run: run_traj.py data/cmd_letterB.csv --mode wait
+[ ] Outside-region run, in air (ONLY if its retarget said OK):
+      $P $C/run_traj.py data/cmd_letterB_outside.csv --mode stream --dashboard
+[ ] Servo static accuracy: 5 poses: kit_capture.py goto S1 S2 S3 ; pose ACC1..ACC5
+    (commanded vs measured in logs/poses.csv)
+[ ] Hand-guided poses: kit_capture.py torque off (SUPPORT THE ARM) ; ~10 diverse poses:
       guide arm -> kit_capture.py pose P01 (avg 20 reads -> logs/poses.csv)
-      tape-measure tip x,y,z from base centre, same pose:
+      tape-measure tip (gripper fingertip) x,y,z from base centre, same pose:
       P01 ____/____/____  P02 ____/____/____  P03 ____/____/____
       P04 ____/____/____  P05 ____/____/____  P06 ____/____/____
       P07 ____/____/____  P08 ____/____/____  P09 ____/____/____
       P10 ____/____/____        (cover low/high, left/right, near/far)
-[ ] Tape fiducial sheet flat on platform ~(240,0) in front of arm (+X0); pen taped
-    to gripper, pen-tip offset measured = ______ mm
-[ ] Touch-off: $P $C/touchoff.py  -> HOLD THE ARM (torque off). 4 fiducials F1-F4,
-    3 reps each, same approach side. End: guide to upright, Enter.
-    -> logs/touchoff_<ts>.csv, session touchoff_log.   MATLAB touchoff_fit -> plane z
-[ ] Paper plane height by ruler (cross-check) = ______ mm ; z_c = ______ ; z_floor = z-5
-[ ] Per run (primary / inair / backup / outside):
-      $P $C/safety.py data/cmd_<name>.csv        PASS required
-      $P $C/run_traj.py data/cmd_<name>.csv --mode stream --dry   (read-only)
-      -> logs/run_<name>_<ts>.csv ; check rate ~50 Hz, dropped replies small
-[ ] In-air dry run: run_traj.py data/cmd_inair_z<NNN>.csv --mode stream
-    --torque-limit 400 --dashboard   (stutter? -> --mode wait)
-[ ] Pen-down primary run #1: run_traj.py data/cmd_primary_z<NNN>.csv --mode stream --dashboard
-[ ] Pen-down primary run #2 (same file, same sheet or fresh sheet = repeatability)
-[ ] Wait-mode run (one): run_traj.py data/cmd_primary_z<NNN>.csv --mode wait
-    (fallback: kit_capture.py play data/cmd_primary_z<NNN>.csv)
-[ ] Backup run (ONLY if sigma3=+1): run_traj.py data/cmd_backup.csv --mode stream
-[ ] Outside-region run, in air: data/cmd_outside.csv --mode stream
-[ ] Repeatability: same circle twice (label sheets A/B, note order)
-[ ] Servo static accuracy: 5 poses: kit_capture.py goto S1 S2 S3 ; pose ACC1..ACC5
-    (commanded vs measured in logs/poses.csv)
+      then kit_capture.py torque on
+[ ] Link tape measurements (base to joint, joint to joint):
+      d1 = _____  L2 = _____  L3 = _____  gripper fingertip length f = _____ mm
+      (gripper as it sits now; nominal f = 98.8)
 [ ] Free read capture during a run (2nd terminal):
     kit_capture.py read 20 RUNREAD   (or torque off + hand-guide sweep)
-[ ] VIDEO every run, laptop screen + arm in frame. Run# ____ file ____
-[ ] Overhead photo of EACH sheet, all 4 markers visible, flat, no shadow
-[ ] Photo of setup with tape arrow +X0 visible; label each sheet (run, time)
+[ ] Photo of setup with tape arrow +X0 visible; video of every run if possible
 
-4. SAFETY
+4. OPTIONAL VIDEO GROUND TRUTH (set up before run #1, record EVERY run)
+[ ] Bright orange (or green/pink) tape/sticker on the gripper fingertip.
+    Colour used: ________
+[ ] ArUco board (data/video_board.pdf, window cut out) held/taped VERTICALLY,
+    face toward +X0 (the camera), centre ticks at y = 0, z = 150 mm, JUST BEHIND
+    the B plane (toward the robot): the tip moves inside the window and the
+    forearm passes through it. It must NOT be in the arm's way: watch run #1
+    with a hand on the power cut; if anything touches, Ctrl-C and move it back.
+    Gap from board face to the B plane (x = 260):  d = ______ mm
+    (session/notes: board_offset_x_mm = -d)
+[ ] Phone on a stand at +X0, 0.6-1 m in front of the robot, facing it, whole
+    board + B area in frame, not moving. 60 fps if possible: ____ fps
+[ ] Start recording BEFORE each run; tap the board edge once in view (sync
+    check); keep the laptop screen in frame if you can. Note run -> video file:
+      run#1 ______  run#2 ______  run#3 ______  outside ______
+
+5. SAFETY
 [ ] Hand near power cut at all times     [ ] Low torque limit on first motions
 [ ] NEVER press Set-Middle / calibration buttons (reg 31 change = exit 3 -> stop)
+[ ] Gripper: never command it, never unplug/power-cycle it
 [ ] Abort: Ctrl-C or ESC (holds arm, torque on, log closed)
 [ ] Check arm path clear before EVERY move; anything odd in convention -> STOP
 
-5. BEFORE LEAVING
+6. BEFORE LEAVING
 [ ] Neutral, torque off, power off
 [ ] Copy ENTIRE kit folder (logs/, session/, photos/, video/) -> pen drive
 [ ] AND upload to cloud (Drive)
 [ ] Open one file from EACH copy (csv, jpg, video) to verify
 [ ] Note anything odd / skipped / failed in session/notes
-[ ] Measured values transcribed (ruler bar, d1/L2/L3, gripper s4, PSU V, sigmas)
+[ ] Measured values transcribed (d1/L2/L3/f, hand-guided xyz, PSU V, sigmas,
+    board gap d, marker colour, fps)

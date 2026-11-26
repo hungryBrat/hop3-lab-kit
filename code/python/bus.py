@@ -1,6 +1,7 @@
 """Thin scservo_sdk wrapper (lab-script compatible) with the safety layer on every write.
 
-Only SRAM registers 40 (torque 0/1), 41.. (acc/goal/speed) and 48 (torque limit) are ever written.
+Only SRAM registers 40 (torque 0/1), 41.. (acc/goal/speed) and 48 (torque limit) are ever written, and only to
+hop3cfg.writable_ids(cfg): IDs 1-3, plus the gripper (ID 4) only if config gripper_enabled is true (it is dead).
 """
 import math
 import time
@@ -37,25 +38,36 @@ class BusBase:
     def __init__(self, cfg, z_floor=None):
         self.cfg = cfg
         self.z_floor = z_floor
-        self.ids = hc.joint_ids(cfg)
+        self.ids = hc.active_ids(cfg)
         self.gid = hc.gripper_id(cfg)
+        self.gripper_enabled = hc.gripper_enabled(cfg)
+        self.writable = hc.writable_ids(cfg)
+        self.written_ids = set()
         self.last_goal_s = None
         self.port = None
 
+    def _assert_writable_id(self, sid):
+        if sid not in self.writable:
+            raise SafetyError(f"refusing to write servo id {sid}: writable ids are {sorted(self.writable)}"
+                              + (" (gripper disabled: ID 4 is dead)" if sid == self.gid else ""))
+        self.written_ids.add(sid)
+
     def ping_all(self, ids=None):
-        return {i: self._ping(i) for i in (ids or self.ids + [self.gid])}
+        return {i: self._ping(i) for i in (ids or self.ids)}
 
     def read_offsets(self, ids=None):
-        return {i: self._read_offset(i) for i in (ids or self.ids + [self.gid])}
+        return {i: self._read_offset(i) for i in (ids or self.ids)}
 
     def set_torque(self, sid, on):
         assert isinstance(on, bool), "set_torque takes a bool"
+        self._assert_writable_id(sid)
         v = 1 if on else 0
         assert_safe_register(REG_TORQUE_ENABLE, v)
         return self._write1(sid, REG_TORQUE_ENABLE, v)
 
     def set_torque_limit(self, sid, val):
         val = int(val)
+        self._assert_writable_id(sid)
         assert_safe_register(REG_TORQUE_LIMIT, val)
         return self._write2(sid, REG_TORQUE_LIMIT, val)
 
@@ -72,7 +84,7 @@ class BusBase:
         c = np.array([goals_counts[i] for i in self.ids], float)
         s = hc.counts_to_deg(c, self.cfg)
         check_goal(s, self.cfg, self.last_goal_s, max_step, self.z_floor)
-        self._write_goals({i: int(goals_counts[i]) for i in self.ids}, int(speed), int(acc))
+        self._send_goals({i: int(goals_counts[i]) for i in self.ids}, int(speed), int(acc))
         self.last_goal_s = s
         return s
 
@@ -80,13 +92,22 @@ class BusBase:
         cnt = hc.deg_to_counts(s_deg, self.cfg)
         return self.sync_write(dict(zip(self.ids, cnt.tolist())), speed, acc, max_step)
 
+    def _send_goals(self, goals, speed, acc):
+        for sid in goals:
+            self._assert_writable_id(sid)
+        self._write_goals(goals, speed, acc)
+
     def hold_gripper(self, speed=200, acc=20):
+        if not self.gripper_enabled:
+            raise SafetyError("gripper disabled in config (ID 4 is dead): hold_gripper refused")
         self._check_speed_acc(speed, acc)
+        if self.cfg.get("gripper_cmd_deg") is None:
+            raise SafetyError("gripper_cmd_deg is null")
         s = float(self.cfg["gripper_cmd_deg"])
         lo, hi = self.cfg["servo_limits_deg"]["j4"]
         if not (lo <= s <= hi):
             raise SafetyError(f"gripper_cmd_deg {s} outside j4 limits [{lo}, {hi}]")
-        self._write_goals({self.gid: int(hc.deg_to_counts(s, self.cfg))}, int(speed), int(acc))
+        self._send_goals({self.gid: int(hc.deg_to_counts(s, self.cfg))}, int(speed), int(acc))
 
     def hold_present(self, ids=None, speed=100, acc=10, tries=10):
         """Goal := present position (zero motion), used before torque-on and to hold after an abort.
@@ -109,7 +130,7 @@ class BusBase:
                     raise SafetyError(f"id {i} present {s:.1f} deg outside hard limits; not writing a goal")
             goals[i] = int(c)
         self._check_speed_acc(speed, acc)
-        self._write_goals(goals, speed, acc)
+        self._send_goals(goals, speed, acc)
         if set(ids) == set(self.ids):
             self.last_goal_s = hc.counts_to_deg([goals[i] for i in self.ids], self.cfg)
         return goals
@@ -174,14 +195,18 @@ class Bus(BusBase):
 
     def _write1(self, sid, addr, val):
         assert_safe_register(addr, val)
+        self._assert_writable_id(sid)
         return self.pk.write1ByteTxRx(sid, addr, val)
 
     def _write2(self, sid, addr, val):
         assert_safe_register(addr, val)
+        self._assert_writable_id(sid)
         return self.pk.write2ByteTxRx(sid, addr, val)
 
     def _write_goals(self, goals, speed, acc):
         assert speed > 0
+        for sid in goals:
+            self._assert_writable_id(sid)
         gsw = self.pk.groupSyncWrite
         gsw.clearParam()
         for sid, c in goals.items():

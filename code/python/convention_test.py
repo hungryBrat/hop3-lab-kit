@@ -2,6 +2,7 @@
 
 python convention_test.py [--mock] [--port P] [--torque-limit 300]
 Every move is announced and needs y before it happens. Hand near the power cut.
+Only IDs 1-3 are pinged/commanded; the gripper (ID 4) is dead and never written.
 """
 import argparse
 import sys
@@ -101,7 +102,12 @@ def main():
     else:
         print("config.json map signs already match")
 
-    if sigma3 == -1:
+    if cfg.get("primary_trajectory") == "letterB":
+        print(f"\nDECISION: sigma3 = {sigma3:+d} -> letter B is valid under both J3 signs (no backup): "
+              "retarget_cmds.py data/cmd_letterB*.csv, then run the PRIMARY data/cmd_letterB.csv in air"
+              + ("" if sigma3 == -1 else "\n  (cmd_letterB_outside.csv is valid only for sigma3=-1: its retarget FAILs "
+                                         "and the file is left untouched -> skip the outside run, note it)"))
+    elif sigma3 == -1:
         print("\nDECISION: sigma3 = -1 (slide 12) -> run the PRIMARY trajectory family")
     else:
         print("\nDECISION: sigma3 = +1 -> run the BACKUP trajectory (data/cmd_backup.csv); note the reason in the report")
