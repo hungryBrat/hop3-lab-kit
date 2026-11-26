@@ -1,0 +1,40 @@
+{
+  "name": "inair_z120",
+  "centre": [
+    240,
+    0,
+    150
+  ],
+  "R": 50,
+  "T_s": 20,
+  "rate_hz": 50,
+  "n_rows": 1001,
+  "map_used": {
+    "theta1": {
+      "sign": 1,
+      "offset": 90
+    },
+    "theta2": {
+      "sign": -1,
+      "offset": 270
+    },
+    "theta3": {
+      "sign": -1,
+      "offset": 180
+    }
+  },
+  "model_source": "STANDIN",
+  "model_file": "/home/agush/mainWS/workspaces/ACADS/AI for Robotics/HOP_3/models/fk_weights_standin.json",
+  "checks": {
+    "limits": true,
+    "step": true,
+    "zfloor": true,
+    "finite": true
+  },
+  "max_step_deg": 0.17578125,
+  "min_z_mm": 149.66562074733724,
+  "z_floor_mm": 20,
+  "placeholder": false,
+  "leave_box": false,
+  "zc": 150
+}

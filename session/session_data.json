@@ -1,0 +1,22 @@
+{
+  "_comment": "Values captured in the robot session. null = not yet captured; code must fall back to the listed default and mark outputs PLACEHOLDER.",
+  "date": null,
+  "port": null,
+  "usb_chip_lsusb": null,
+  "psu_voltage_V": null,
+  "servo_offsets_reg31": {"1": null, "2": null, "3": null, "4": null},
+  "sigma1": null,
+  "sigma3": null,
+  "neutral_tip_height_mm": null,
+  "touchoff_log": null,
+  "fiducials_mm": null,
+  "paper_plane_z_mm": null,
+  "pen_offset_mm": null,
+  "printed_scale_check_mm": null,
+  "chosen_trajectory": null,
+  "z_c_mm": null,
+  "run_logs": [],
+  "sheet_photos": [],
+  "video": null,
+  "notes": ""
+}

@@ -1,0 +1,89 @@
+HOP-3 ROBOT SESSION CHECKLIST  (BITS F327, ST3215 3-DOF arm)  -- ONLY ONE SESSION
+Run from kit root.  P=.venv/bin/python  C=code/python.  Add --mock to rehearse.
+Date ______  Team ______________  Start time ______  Port ______  PSU V ______
+
+1. BRING
+[ ] Laptop charged + charger        [ ] USB cable (+ USB-C adapter)
+[ ] Fiducial sheet printed at 100%, 3+ copies. Ruler-check the 100 mm
+    bar: measured = ________ mm
+[ ] Blue/black felt-tip pen (NO red)  [ ] Tape  [ ] Steel ruler + measuring tape
+[ ] Book stack / box for platform     [ ] Phone + stand (video + photos)
+[ ] Pen drive                         [ ] This checklist + pen
+
+2. SETUP (lab laptop, at minute 0)
+[ ] bash setup.sh   (venv + ftservo-python-sdk)   [ ] mkdir -p photos video session
+[ ] Plug in; lsusb ; dmesg | tail ; ls /dev/ttyACM* /dev/ttyUSB*
+[ ] No port but lsusb shows 1a86:7523 -> brltty mask:
+      sudo systemctl mask brltty-udev.service brltty.service
+      sudo systemctl stop brltty-udev brltty ; replug
+[ ] Permission denied -> groups lists dialout? else (last resort)
+      sudo chmod a+rw /dev/ttyACM0   (or /dev/ttyUSB0)
+[ ] PSU voltage label: ______ V (12 V vs 7.4 V) -> write in session/notes
+[ ] Pings fail: PSU on? jumper on A? daisy-chain cable? baud 1M? ESP32 board?
+[ ] NO MATLAB on lab laptop: raise paper with books so its height above the BASE BOTTOM
+    is 40, 60, 80, 100 or 120 mm (ruler!) and use data/cmd_primary_z<that>.csv.
+    Pen tip pressed ~2 mm: set the stack ~2 mm higher than the file z.
+
+3. DATA TO CAPTURE  (command -> where it lands)
+[ ] Probe: $P $C/probe.py [--port DEV]  -> logs/probe_<ts>.csv, session port
+    + servo_offsets_reg31. Needs ids 1-4 ok + PROBE OK.  (fallback: kit_capture.py probe)
+[ ] Gripper servo value used (s4) = ________  (record it; keep it fixed all session)
+[ ] Convention test: $P $C/convention_test.py  (answer y/N per move)
+      neutral tip height by tape = ______ mm (DH 398.6)   tape arrow +X0 on table
+      sigma1 = ____ (s1->110, CCW from above = +1)
+      sigma3 = ____ (s3->200, tilts toward +X0 = -1, away = +1)
+      -> session/ (sigma1, sigma3, neutral_tip_height_mm); may edit config.json
+[ ] $P $C/retarget_cmds.py data/cmd_*.csv   (sigma3=-1 -> primary; +1 -> backup;
+    FAIL rows on the non-chosen family are expected)
+[ ] FALLBACK convention (if script fails): kit_capture.py goto 90 180 180 ;
+    goto 90 200 180 ; goto 110 180 180 ; goto 90 180 200  -- photo each pose
+[ ] Photos: arm at neutral + each convention pose (photos/)
+[ ] Link tape measurements (base to joint, joint to joint):
+      d1 = _____  L2 = _____  L3 = _____  gripper tip length (at s4 above) = _____ mm
+[ ] Hand-guided poses: kit_capture.py torque off ; for ~10 diverse poses:
+      guide arm -> kit_capture.py pose P01 (avg 20 reads -> logs/poses.csv)
+      tape-measure tip x,y,z from base centre, same pose:
+      P01 ____/____/____  P02 ____/____/____  P03 ____/____/____
+      P04 ____/____/____  P05 ____/____/____  P06 ____/____/____
+      P07 ____/____/____  P08 ____/____/____  P09 ____/____/____
+      P10 ____/____/____        (cover low/high, left/right, near/far)
+[ ] Tape fiducial sheet flat on platform ~(240,0) in front of arm (+X0); pen taped
+    to gripper, pen-tip offset measured = ______ mm
+[ ] Touch-off: $P $C/touchoff.py  -> HOLD THE ARM (torque off). 4 fiducials F1-F4,
+    3 reps each, same approach side. End: guide to upright, Enter.
+    -> logs/touchoff_<ts>.csv, session touchoff_log.   MATLAB touchoff_fit -> plane z
+[ ] Paper plane height by ruler (cross-check) = ______ mm ; z_c = ______ ; z_floor = z-5
+[ ] Per run (primary / inair / backup / outside):
+      $P $C/safety.py data/cmd_<name>.csv        PASS required
+      $P $C/run_traj.py data/cmd_<name>.csv --mode stream --dry   (read-only)
+      -> logs/run_<name>_<ts>.csv ; check rate ~50 Hz, dropped replies small
+[ ] In-air dry run: run_traj.py data/cmd_inair_z<NNN>.csv --mode stream
+    --torque-limit 400 --dashboard   (stutter? -> --mode wait)
+[ ] Pen-down primary run #1: run_traj.py data/cmd_primary_z<NNN>.csv --mode stream --dashboard
+[ ] Pen-down primary run #2 (same file, same sheet or fresh sheet = repeatability)
+[ ] Wait-mode run (one): run_traj.py data/cmd_primary_z<NNN>.csv --mode wait
+    (fallback: kit_capture.py play data/cmd_primary_z<NNN>.csv)
+[ ] Backup run (ONLY if sigma3=+1): run_traj.py data/cmd_backup.csv --mode stream
+[ ] Outside-region run, in air: data/cmd_outside.csv --mode stream
+[ ] Repeatability: same circle twice (label sheets A/B, note order)
+[ ] Servo static accuracy: 5 poses: kit_capture.py goto S1 S2 S3 ; pose ACC1..ACC5
+    (commanded vs measured in logs/poses.csv)
+[ ] Free read capture during a run (2nd terminal):
+    kit_capture.py read 20 RUNREAD   (or torque off + hand-guide sweep)
+[ ] VIDEO every run, laptop screen + arm in frame. Run# ____ file ____
+[ ] Overhead photo of EACH sheet, all 4 markers visible, flat, no shadow
+[ ] Photo of setup with tape arrow +X0 visible; label each sheet (run, time)
+
+4. SAFETY
+[ ] Hand near power cut at all times     [ ] Low torque limit on first motions
+[ ] NEVER press Set-Middle / calibration buttons (reg 31 change = exit 3 -> stop)
+[ ] Abort: Ctrl-C or ESC (holds arm, torque on, log closed)
+[ ] Check arm path clear before EVERY move; anything odd in convention -> STOP
+
+5. BEFORE LEAVING
+[ ] Neutral, torque off, power off
+[ ] Copy ENTIRE kit folder (logs/, session/, photos/, video/) -> pen drive
+[ ] AND upload to cloud (Drive)
+[ ] Open one file from EACH copy (csv, jpg, video) to verify
+[ ] Note anything odd / skipped / failed in session/notes
+[ ] Measured values transcribed (ruler bar, d1/L2/L3, gripper s4, PSU V, sigmas)
