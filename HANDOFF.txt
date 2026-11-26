@@ -1,0 +1,39 @@
+HOP-3 LAB KIT - READ THIS FIRST (2 min)
+=======================================
+What this is: everything needed to collect the robot data for BITS F327 HOP-3
+(NN forward kinematics). This is our LAST session with the arm. The goal is to
+come back with data, not to debug. Analysis, NN training and the report happen
+back home; nothing here needs MATLAB.
+
+1. SETUP (5 min)
+   bash setup.sh                 -> must print SETUP OK
+   Plug in the arm. If no /dev/ttyACM* or /dev/ttyUSB*: see CHECKLIST section 2
+   (brltty / permissions). All commands run from this folder:
+   P=.venv/bin/python ; C=code/python
+
+2. FOLLOW CHECKLIST.txt TOP TO BOTTOM. Tick boxes, write numbers on paper too.
+   Order: probe -> convention test (signs) -> tape measurements -> hand-guided
+   poses -> touch-off -> runs (in-air first, then pen-down) -> photos -> backup copy.
+
+3. THE ONE DECISION YOU MUST MAKE
+   convention_test.py prints the decision at the end:
+     sigma3 = -1  -> run data/cmd_primary_z<NNN>.csv (NNN = paper height, mm)
+     sigma3 = +1  -> run ONLY data/cmd_backup.csv (in air). Do not run primary.
+   After the test, run retarget_cmds.py on the command files (CHECKLIST says how).
+
+4. IF THE MAIN SCRIPTS BREAK, use the fallback (needs only the servo SDK):
+   $P kit_capture.py probe | torque on|off | read 30 LABEL | pose LABEL
+                    | goto S1 S2 S3 | play data/cmd_<name>.csv
+   It logs to logs/. Write down in session/notes what you used.
+
+5. RULES
+   - Hand near the power switch; check the arm path is clear before every move.
+   - Never press servo "Set Middle"/calibration buttons.
+   - Ctrl-C/ESC aborts (arm holds position).
+   - Blue/black pen only. Keep the gripper at ONE value all session and write it down.
+   - Video every run with the laptop screen in frame; overhead photo of every sheet.
+
+6. BRING BACK (this matters most)
+   The whole folder: logs/, session/, photos/, video/ + the paper checklist with
+   your handwritten numbers. Copy to pen drive AND Drive before leaving; open one
+   file from each copy to check.
