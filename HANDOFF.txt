@@ -26,6 +26,9 @@ THE TASK CHANGED (2026-11-27):
    Optional: phone video of every run with the ArUco board (CHECKLIST section 4).
 
 3. AFTER THE CONVENTION TEST (always)
+   Already measured on 2026-11-26: sigma1 = -1, sigma3 = -1. config.json and both
+   cmd files ship retargeted to that. If today's test gives the same signs, the
+   retarget below changes 0 rows; if not, it fixes the files.
    $P $C/retarget_cmds.py data/cmd_letterB.csv data/cmd_letterB_outside.csv
    cmd_letterB.csv works for both sigma3 signs (no backup trajectory).
    cmd_letterB_outside.csv only works for sigma3 = -1; if its retarget says

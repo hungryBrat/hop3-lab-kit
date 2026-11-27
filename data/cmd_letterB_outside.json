@@ -11,7 +11,7 @@
   "n_rows": 1788,
   "map_used": {
     "theta1": {
-      "sign": 1,
+      "sign": -1,
       "offset": 90
     },
     "theta2": {
@@ -32,7 +32,7 @@
     "finite": true
   },
   "max_step_deg": 0.17578125,
-  "min_z_mm": 99.915285097586548,
+  "min_z_mm": 99.91528509758655,
   "z_floor_mm": 20,
   "placeholder": false,
   "H": 100,

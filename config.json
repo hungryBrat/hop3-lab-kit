@@ -45,7 +45,7 @@
   "gripper_cmd_deg": null,
   "map": {
     "theta1": {
-      "sign": 1,
+      "sign": -1,
       "offset": 90
     },
     "theta2": {
