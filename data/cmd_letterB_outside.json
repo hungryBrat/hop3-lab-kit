@@ -23,8 +23,8 @@
       "offset": 180
     }
   },
-  "model_source": "STANDIN",
-  "model_file": "/home/agush/mainWS/workspaces/ACADS/AI for Robotics/HOP_3/models/fk_weights_standin.json",
+  "model_source": "fitnet",
+  "model_file": "/home/agush/mainWS/workspaces/ACADS/AI for Robotics/HOP_3/models/fk_weights.json",
   "checks": {
     "limits": true,
     "step": true,
