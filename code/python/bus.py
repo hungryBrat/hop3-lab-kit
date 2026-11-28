@@ -73,6 +73,10 @@ class BusBase:
 
     @staticmethod
     def _check_speed_acc(speed, acc):
+        if isinstance(speed, dict):
+            for v in speed.values():
+                assert int(v) > 0, "speed must be > 0 (0 means MAX speed on ST3215)"
+            speed = 1
         assert int(speed) > 0, "speed must be > 0 (0 means MAX speed on ST3215)"
         assert 0 < int(acc) <= 254, "acc must be 1..254 (0 means MAX acceleration)"
 
@@ -84,7 +88,8 @@ class BusBase:
         c = np.array([goals_counts[i] for i in self.ids], float)
         s = hc.counts_to_deg(c, self.cfg)
         check_goal(s, self.cfg, self.last_goal_s, max_step, self.z_floor)
-        self._send_goals({i: int(goals_counts[i]) for i in self.ids}, int(speed), int(acc))
+        spd = {i: int(speed[i]) for i in self.ids} if isinstance(speed, dict) else int(speed)
+        self._send_goals({i: int(goals_counts[i]) for i in self.ids}, spd, int(acc))
         self.last_goal_s = s
         return s
 
@@ -204,13 +209,14 @@ class Bus(BusBase):
         return self.pk.write2ByteTxRx(sid, addr, val)
 
     def _write_goals(self, goals, speed, acc):
-        assert speed > 0
+        spd = speed if isinstance(speed, dict) else {sid: speed for sid in goals}
+        assert all(v > 0 for v in spd.values())
         for sid in goals:
             self._assert_writable_id(sid)
         gsw = self.pk.groupSyncWrite
         gsw.clearParam()
         for sid, c in goals.items():
-            self.pk.SyncWritePosEx(sid, int(c), speed, acc)
+            self.pk.SyncWritePosEx(sid, int(c), int(spd[sid]), acc)
         gsw.txPacket()
         gsw.clearParam()
 

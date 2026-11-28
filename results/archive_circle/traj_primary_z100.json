@@ -1,0 +1,44 @@
+{
+  "name": "primary_z100",
+  "n_points": 360,
+  "centre": [
+    240,
+    0,
+    100
+  ],
+  "R": 50,
+  "inv_residual_rms_mm": 0.00098215696616792765,
+  "inv_residual_max_mm": 0.00955253603230532,
+  "dh_err_rms_mm": 0.0010241283290829707,
+  "dh_err_max_mm": 0.0094948902554025678,
+  "max_joint_step_deg": 0.449245876130945,
+  "q_nn_minus_ik_rms_deg": [
+    0.00018332814206934383,
+    0.00018279053597531342,
+    0.00030090997802225886
+  ],
+  "q_nn_minus_ik_max_deg": [
+    0.0016779485786695414,
+    0.0020115128646835956,
+    0.003083715636812201
+  ],
+  "theta_min_deg": [
+    -12.024697950205514,
+    41.70713353266639,
+    -111.81952617938792
+  ],
+  "theta_max_deg": [
+    12.024577392959856,
+    81.031143725847343,
+    -58.431996238101483
+  ],
+  "n_converged": 360,
+  "n_hit_bound": 0,
+  "max_iterations": 2,
+  "leave_box": false,
+  "model_source": "STANDIN",
+  "within_limits": true,
+  "max_row_step_deg": 0.17578125,
+  "min_z_mm": 99.6466288819075,
+  "export": "written"
+}

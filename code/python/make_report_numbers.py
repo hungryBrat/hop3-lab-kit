@@ -217,6 +217,9 @@ def main():
             v = seeds.get(k)
             if isinstance(v, list) and len(v) > b and fk.get(k) is None:
                 fk[k] = v[b]
+        for k in ("mu_final", "tr_stop"):
+            if seeds.get(k) is not None and fk.get(k) is None:
+                fk[k] = seeds[k]
     for cs, keys in [("FKEpochs", ("best_epoch", "epochs_reached", "epochs")),
                      ("FKTrainTime", ("train_time_s", "training_time_s")),
                      ("FKMuFinal", ("mu_final", "mu")),
@@ -513,7 +516,10 @@ def main():
         cand = sorted(glob.glob(os.path.join(ROOT, "logs", f"run_{run_name}*.json")) +
                       glob.glob(os.path.join(ROOT, "logs", "synthetic", f"run_{run_name}*.json")))
         meta = load(cand[-1]) if cand else None
-    macro("RunMode", "mode", g(meta, "mode"), rf)
+    md = g(meta, "mode")
+    if md and (g(meta, "decim") or 1) > 1:
+        md = f"{md}, matched speed (goal every {meta['decim']} ticks)"
+    macro("RunMode", "mode", md, rf)
 
     # ---------- shape metrics ----------
     shape = g(rd, "shape") or {}
@@ -616,12 +622,8 @@ def main():
     sess_v("SessDate", "date")
     sess_v("SessPort", "port", cfg.get("port"))
     sess_v("SessUSB", "usb_chip_lsusb")
-    sess_v("SessPSU", "psu_voltage_V")
     sess_v("SigmaOne", "sigma1", g(cfg, "map", "theta1", "sign"))
     sess_v("SigmaThree", "sigma3", g(cfg, "map", "theta3", "sign"))
-    sess_v("NeutralTipHeight", "neutral_tip_height_mm")
-    nt = sess.get("neutral_tip_height_mm")
-    macro("NeutralTipDiff", "neutral tip diff", nt - 398.6 if num(nt) else None, sess_flag)
     offs = sess.get("servo_offsets_reg31") or {}
     for k, j in zip("123", JN):
         macro(f"OffsetReg{j}", f"reg31 id{k}", offs.get(k), sess_flag if offs.get(k) is not None else None)

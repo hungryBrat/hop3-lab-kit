@@ -1,0 +1,34 @@
+{
+  "name": "test_circle",
+  "centre": [
+    240.0,
+    0.0,
+    40.0
+  ],
+  "R": 50.0,
+  "T_s": 20.0,
+  "rate_hz": 50,
+  "n_rows": 1001,
+  "map_used": {
+    "theta1": {
+      "sign": -1,
+      "offset": 90
+    },
+    "theta2": {
+      "sign": -1,
+      "offset": 270
+    },
+    "theta3": {
+      "sign": -1,
+      "offset": 180
+    }
+  },
+  "model_source": "DH_STANDIN_TEST (x_nn = DH FK)",
+  "checks": {
+    "limits": true,
+    "step": true,
+    "zfloor": true,
+    "finite": true
+  },
+  "placeholder": true
+}

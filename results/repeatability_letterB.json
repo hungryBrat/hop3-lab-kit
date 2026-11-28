@@ -1,0 +1,47 @@
+{
+  "name": "letterB",
+  "n_repeats": 3,
+  "runs": [
+    "letterB",
+    "letterB_rep2",
+    "letterB_rep3"
+  ],
+  "synthetic": false,
+  "placeholder": false,
+  "contour_rms_mm": {
+    "mean": 1.2898687650815241,
+    "std": 0.044892298554093352,
+    "values": [
+      1.2433939895701478,
+      1.332990566339884,
+      1.2932217393345407
+    ]
+  },
+  "total_rms_mm": {
+    "mean": 1.2898524127068325,
+    "std": 0.044893089871381429,
+    "values": [
+      1.243377472882345,
+      1.3329757945778633,
+      1.2932039706602891
+    ]
+  },
+  "total_basis": [
+    "DH(q_meas) - p_des (3-D contour; no video / pen ground truth)",
+    "DH(q_meas) - p_des (3-D contour; no video / pen ground truth)",
+    "DH(q_meas) - p_des (3-D contour; no video / pen ground truth)"
+  ],
+  "lag_ms": {
+    "mean": 24.199790019104643,
+    "std": 9.96592494393298,
+    "values": [
+      33.030201295121351,
+      26.175009837230128,
+      13.394158924962461
+    ]
+  },
+  "max_deviation_between_repeats_mm": 1.2082480101543127,
+  "rms_deviation_between_repeats_mm": 0.46663671364753251,
+  "max_deviation_same_k_mm": 2.1664875545833442,
+  "basis": "DH(q_meas) path of each repeat; contour = nearest point on the other repeat's path; same_k = equal command index"
+}

@@ -1,0 +1,290 @@
+{
+  "cmd_file": "data/cmd_letterB.csv",
+  "mode": "stream",
+  "mock": false,
+  "synthetic": false,
+  "config_snapshot": {
+    "units": {
+      "angle": "deg",
+      "length": "mm"
+    },
+    "dh": {
+      "d1": 0.0,
+      "L2": 136.5,
+      "L3": 97.6,
+      "f": 98.8,
+      "alpha_deg": [
+        90,
+        0,
+        90,
+        0
+      ]
+    },
+    "servo_ids": {
+      "j1": 1,
+      "j2": 2,
+      "j3": 3,
+      "gripper": 4
+    },
+    "servo_limits_deg": {
+      "j1": [
+        0,
+        180
+      ],
+      "j2": [
+        135,
+        270
+      ],
+      "j3": [
+        90,
+        315
+      ],
+      "j4": [
+        110,
+        180
+      ]
+    },
+    "safety_margin_deg": 5,
+    "max_step_deg": 2.0,
+    "z_floor_mm": -45.7,
+    "gripper_cmd_deg": null,
+    "map": {
+      "theta1": {
+        "sign": -1,
+        "offset": 90
+      },
+      "theta2": {
+        "sign": -1,
+        "offset": 270
+      },
+      "theta3": {
+        "sign": -1,
+        "offset": 180
+      }
+    },
+    "encoder": {
+      "counts_per_rev": 4096
+    },
+    "region": {
+      "theta1": [
+        -60,
+        60
+      ],
+      "theta2": [
+        10,
+        125
+      ],
+      "theta3": [
+        -125,
+        -10
+      ]
+    },
+    "dataset": {
+      "n_pool": 31500,
+      "n_test": 6000,
+      "n_traj_test": 2000,
+      "seed_pool": 1,
+      "seed_test": 2
+    },
+    "trajectories": {
+      "primary": {
+        "centre_xy": [
+          240,
+          0
+        ],
+        "z_family": [
+          -65.7,
+          -45.7,
+          -25.7,
+          -5.7,
+          14.3,
+          34.3,
+          54.3
+        ],
+        "R": 50,
+        "n_points": 360,
+        "T_s": 20
+      },
+      "inair_offset_mm": 30,
+      "backup": {
+        "centre": [
+          270,
+          0,
+          104.3
+        ],
+        "R": 40,
+        "n_points": 360,
+        "T_s": 20
+      },
+      "outside": {
+        "centre": [
+          125,
+          205,
+          14.3
+        ],
+        "R": 50,
+        "n_points": 360,
+        "T_s": 20
+      },
+      "letterB": {
+        "plane": "front",
+        "x_plane_mm": 260,
+        "centre_yz": [
+          0,
+          84.3
+        ],
+        "H": 100,
+        "stroke_order": [
+          "spine_up",
+          "top_bump",
+          "bottom_bump"
+        ],
+        "v_max_mm_s": 15,
+        "corner_dwell_s": 0.4,
+        "note": "spine at y=-H/8 from z_c-H/2 to z_c+H/2; bumps radius H/4 toward +y (viewer's right, viewer at +X0)"
+      },
+      "letterB_outside": {
+        "plane": "front",
+        "x_plane_mm": 80,
+        "centre_yz": [
+          150,
+          84.3
+        ],
+        "H": 100,
+        "v_max_mm_s": 15,
+        "corner_dwell_s": 0.4,
+        "note": "theta1 59.8-63.8 deg: ~42% beyond the 60 deg training edge; within servo limits under current map"
+      }
+    },
+    "stream": {
+      "rate_hz": 50,
+      "speed": 1000,
+      "acc": 50,
+      "baud": 1000000
+    },
+    "port": "/dev/ttyACM0",
+    "gripper_enabled": false,
+    "servo_ids_active": [
+      1,
+      2,
+      3
+    ],
+    "primary_trajectory": "letterB"
+  },
+  "offsets_reg31": {
+    "1": 522,
+    "2": -455,
+    "3": -162
+  },
+  "port": "/dev/ttyACM0",
+  "started": "20261127_193218",
+  "torque_limit": null,
+  "rate_hz_cmd": 50,
+  "speed": 1000,
+  "acc": 50,
+  "decim": 10,
+  "n_rows_cmd": 1788,
+  "cmd_meta": {
+    "name": "letterB",
+    "centre": [
+      260,
+      0,
+      84.3
+    ],
+    "R": 25,
+    "T_s": 35.74,
+    "rate_hz": 50,
+    "n_rows": 1788,
+    "map_used": {
+      "theta1": {
+        "sign": -1,
+        "offset": 90
+      },
+      "theta2": {
+        "sign": -1,
+        "offset": 270
+      },
+      "theta3": {
+        "sign": -1,
+        "offset": 180
+      }
+    },
+    "model_source": "fitnet",
+    "model_file": "models/fk_weights.json",
+    "checks": {
+      "limits": true,
+      "step": true,
+      "zfloor": true,
+      "finite": true
+    },
+    "max_step_deg": 0.087890625,
+    "min_z_mm": 34.168349149960434,
+    "z_floor_mm": -45.7,
+    "placeholder": false,
+    "H": 100,
+    "corners_k": [
+      70,
+      695,
+      1206,
+      1717
+    ],
+    "leave_box": false,
+    "plane": "front",
+    "segments": [
+      {
+        "name": "spine",
+        "k_start": 70,
+        "k_end": 695
+      },
+      {
+        "name": "top",
+        "k_start": 715,
+        "k_end": 1206
+      },
+      {
+        "name": "bottom",
+        "k_start": 1226,
+        "k_end": 1717
+      }
+    ],
+    "timed": true
+  },
+  "n_logged": 1788,
+  "comm_fail_reads": 0,
+  "aborted": false,
+  "abort_reason": null,
+  "offsets_reg31_end": {
+    "1": 522,
+    "2": -455,
+    "3": -162
+  },
+  "offsets_unchanged": true,
+  "achieved_rate_hz": 49.999777801770875,
+  "dropped_replies": 0,
+  "mock_dropped": null,
+  "dashboard_dropped_frames": 0,
+  "log_csv": "logs/run_letterB_20261127_193218.csv",
+  "written_ids": [
+    1,
+    2,
+    3
+  ],
+  "gripper_enabled": false,
+  "segments": [
+    {
+      "name": "spine",
+      "k_start": 70,
+      "k_end": 695
+    },
+    {
+      "name": "top",
+      "k_start": 715,
+      "k_end": 1206
+    },
+    {
+      "name": "bottom",
+      "k_start": 1226,
+      "k_end": 1717
+    }
+  ]
+}

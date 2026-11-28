@@ -1,0 +1,44 @@
+{
+  "name": "session_zc",
+  "n_points": 360,
+  "centre": [
+    240,
+    0,
+    40
+  ],
+  "R": 50,
+  "inv_residual_rms_mm": 0.00095148919154159489,
+  "inv_residual_max_mm": 0.0094827699949180944,
+  "dh_err_rms_mm": 0.0010109612660185536,
+  "dh_err_max_mm": 0.0095228116686759141,
+  "max_joint_step_deg": 0.44884937668047087,
+  "q_nn_minus_ik_rms_deg": [
+    0.00018337193338580857,
+    0.00016470673511451641,
+    0.00024249901633489592
+  ],
+  "q_nn_minus_ik_max_deg": [
+    0.0017180245632077984,
+    0.0018650620451623467,
+    0.0029390890490930133
+  ],
+  "theta_min_deg": [
+    -12.0247060697499,
+    30.294235191699745,
+    -112.41471156401482
+  ],
+  "theta_max_deg": [
+    12.024696426887111,
+    63.552711695615415,
+    -59.07429496141075
+  ],
+  "n_converged": 360,
+  "n_hit_bound": 0,
+  "max_iterations": 2,
+  "leave_box": false,
+  "model_source": "STANDIN",
+  "within_limits": true,
+  "max_row_step_deg": 0.17578125,
+  "min_z_mm": 39.663616226285,
+  "export": "written"
+}

@@ -1,0 +1,44 @@
+{
+  "name": "primary_z020",
+  "n_points": 360,
+  "centre": [
+    240,
+    0,
+    20
+  ],
+  "R": 50,
+  "inv_residual_rms_mm": 0.000955436093628414,
+  "inv_residual_max_mm": 0.0095682535780061712,
+  "dh_err_rms_mm": 0.0013294330186623543,
+  "dh_err_max_mm": 0.0090402669957462024,
+  "max_joint_step_deg": 0.45004417150111919,
+  "q_nn_minus_ik_rms_deg": [
+    0.0001941963054938134,
+    0.00032926580629198459,
+    0.00044382149922104894
+  ],
+  "q_nn_minus_ik_max_deg": [
+    0.0015980905380122978,
+    0.0019445332374630198,
+    0.0032940271309911395
+  ],
+  "theta_min_deg": [
+    -12.02469016012242,
+    25.295938773771788,
+    -110.77287293035542
+  ],
+  "theta_max_deg": [
+    12.024659314669131,
+    56.473829445310074,
+    -57.278702726666154
+  ],
+  "n_converged": 360,
+  "n_hit_bound": 0,
+  "max_iterations": 2,
+  "leave_box": false,
+  "model_source": "STANDIN",
+  "within_limits": false,
+  "max_row_step_deg": null,
+  "min_z_mm": 19.998106836035163,
+  "export": "cmd_primary_z020 refused: limits=1 step=1 zfloor=0 finite=1 (max step 0.176 deg, min z 19.67 mm, servo min [78.0 213.5 237.3] max [102.0 244.7 290.7])"
+}

@@ -1,0 +1,32 @@
+{
+  "_comment": "SYNTHETIC circle/pen session for test_analysis.m (legacy pen path). Not robot data.",
+  "date": "2026-11-26 (SYNTHETIC)",
+  "port": null,
+  "usb_chip_lsusb": null,
+  "psu_voltage_V": null,
+  "servo_offsets_reg31": {
+    "1": null,
+    "2": null,
+    "3": null,
+    "4": null
+  },
+  "sigma1": 1,
+  "sigma3": -1,
+  "neutral_tip_height_mm": 398.6,
+  "touchoff_log": "logs/synthetic/touchoff_20261126_115500.csv",
+  "fiducials_mm": "data/fiducials.json",
+  "paper_plane_z_mm": 40.0,
+  "pen_offset_mm": 0.0,
+  "printed_scale_check_mm": 97.0,
+  "chosen_trajectory": "synth_z040",
+  "z_c_mm": 40.0,
+  "run_logs": [
+    "logs/synthetic/run_synth_z040_20261126_120000.csv"
+  ],
+  "sheet_photos": [
+    "data/synthetic/sheet_synth_z040.jpg"
+  ],
+  "video": null,
+  "notes": "SYNTHETIC",
+  "synthetic": true
+}

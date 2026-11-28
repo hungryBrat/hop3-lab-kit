@@ -1,0 +1,140 @@
+{
+  "runs": [
+    {
+      "log": "logs/experiments/run_letterB_20261127_190651.csv",
+      "label": "50 Hz stream, full torque",
+      "v_mm_s": 15,
+      "decim": 1,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.344575730356919,
+      "contour_max_mm": 3.9959988897097283,
+      "joint_err_sd_deg": [
+        0.22321830644166185,
+        0.37829315536466424,
+        0.3003764948953666
+      ],
+      "roughness_mm": 0.29396100463128816
+    },
+    {
+      "log": "logs/experiments/run_letterB_20261127_190748.csv",
+      "label": "50 Hz, speed cap 120, acc 254",
+      "v_mm_s": 15,
+      "decim": 1,
+      "torque_limit": null,
+      "speed": 120,
+      "acc": 254,
+      "contour_rms_mm": 1.3247751793368254,
+      "contour_max_mm": 3.7960197284181882,
+      "joint_err_sd_deg": [
+        0.20658852222530888,
+        0.4006093134360131,
+        0.3002208132395908
+      ],
+      "roughness_mm": 0.29753638055880627
+    },
+    {
+      "log": "logs/experiments/run_letterB_v30_20261127_190944.csv",
+      "label": "50 Hz, B at 30 mm/s",
+      "v_mm_s": 30,
+      "decim": 1,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.2895285001319674,
+      "contour_max_mm": 3.9990664759250296,
+      "joint_err_sd_deg": [
+        0.24344250373121443,
+        0.3807469201221344,
+        0.35392426699752716
+      ],
+      "roughness_mm": 0.3619664514081682
+    },
+    {
+      "log": "logs/experiments/run_letterB_v45_20261127_191019.csv",
+      "label": "50 Hz, B at 45 mm/s",
+      "v_mm_s": 45,
+      "decim": 1,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.1950153363802554,
+      "contour_max_mm": 3.782177947337784,
+      "joint_err_sd_deg": [
+        0.26322643514745037,
+        0.4245471222804279,
+        0.4320877565999791
+      ],
+      "roughness_mm": 0.3857348675397222
+    },
+    {
+      "log": "logs/experiments/run_letterB_v30_20261127_193024.csv",
+      "label": "matched speed, B at 30 mm/s",
+      "v_mm_s": 30,
+      "decim": 10,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.3992348393461418,
+      "contour_max_mm": 4.101347272612348,
+      "joint_err_sd_deg": [
+        0.19163466091994225,
+        0.34445220216828426,
+        0.2671379584603573
+      ],
+      "roughness_mm": 0.36202264540571183
+    },
+    {
+      "log": "logs/run_letterB_20261127_192850.csv",
+      "label": "matched speed, B at 15 mm/s (final)",
+      "v_mm_s": 15,
+      "decim": 10,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.2564986618427496,
+      "contour_max_mm": 3.672724747889167,
+      "joint_err_sd_deg": [
+        0.1338254881989506,
+        0.3214722219041635,
+        0.2112816239720405
+      ],
+      "roughness_mm": 0.29159581993440914
+    },
+    {
+      "log": "logs/run_letterB_20261127_193116.csv",
+      "label": "matched speed, repeat 2",
+      "v_mm_s": 15,
+      "decim": 10,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.3608195457201946,
+      "contour_max_mm": 3.7788216600844904,
+      "joint_err_sd_deg": [
+        0.16801996146165674,
+        0.3171627019228901,
+        0.21363292971697537
+      ],
+      "roughness_mm": 0.3054662692541657
+    },
+    {
+      "log": "logs/run_letterB_20261127_193218.csv",
+      "label": "matched speed, repeat 3",
+      "v_mm_s": 15,
+      "decim": 10,
+      "torque_limit": null,
+      "speed": 1000,
+      "acc": 50,
+      "contour_rms_mm": 1.3101939623815957,
+      "contour_max_mm": 3.7788216600844904,
+      "joint_err_sd_deg": [
+        0.15920015725771755,
+        0.33451242780500895,
+        0.22029471917050292
+      ],
+      "roughness_mm": 0.31026018734478217
+    }
+  ]
+}

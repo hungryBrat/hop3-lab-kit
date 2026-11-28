@@ -174,7 +174,7 @@ def selftest(cfg):
     expect("out-of-limit row rejected (limits)", not ch["limits"])
     e, ch = validate_arrays(hc.CMD_HEADER, _set_s(cfg, good, slice(20, None), 0, add=10.0), cfg)
     expect("10 deg jump rejected (step)", not ch["step"])
-    low = _circle_cmd(cfg, centre=(240.0, 0.0, 5.0))
+    low = _circle_cmd(cfg, centre=(240.0, 0.0, cfg["z_floor_mm"] - 15.0))
     e, ch = validate_arrays(hc.CMD_HEADER, low, cfg)
     expect("z < floor circle rejected (zfloor)", not ch["zfloor"] and ch["limits"] and ch["step"])
     nan = good.copy()

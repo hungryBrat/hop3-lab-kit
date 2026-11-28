@@ -1,0 +1,44 @@
+{
+  "name": "backup",
+  "n_points": 360,
+  "centre": [
+    270,
+    0,
+    170
+  ],
+  "R": 40,
+  "inv_residual_rms_mm": 0.00055499174506544371,
+  "inv_residual_max_mm": 0.0060298008580717509,
+  "dh_err_rms_mm": 0.00060312375013308922,
+  "dh_err_max_mm": 0.0060857846213564579,
+  "max_joint_step_deg": 0.50852539038353228,
+  "q_nn_minus_ik_rms_deg": [
+    7.72797810749518E-5,
+    0.00036837911458668617,
+    0.000632673415927765
+  ],
+  "q_nn_minus_ik_max_deg": [
+    0.0011000673645832904,
+    0.0025405742863497949,
+    0.0043048165025751928
+  ],
+  "theta_min_deg": [
+    -8.5193322351954972,
+    31.498888132281998,
+    -82.95800570652392
+  ],
+  "theta_max_deg": [
+    8.5193534263339217,
+    74.910877582396552,
+    -21.831711730727232
+  ],
+  "n_converged": 360,
+  "n_hit_bound": 0,
+  "max_iterations": 4,
+  "leave_box": false,
+  "model_source": "STANDIN",
+  "within_limits": true,
+  "max_row_step_deg": 0.263671875,
+  "min_z_mm": 169.68533321365328,
+  "export": "written"
+}

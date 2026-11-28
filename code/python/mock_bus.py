@@ -102,7 +102,8 @@ class MockBus(BusBase):
         return 0, 0
 
     def _write_goals(self, goals, speed, acc):
-        assert speed > 0
+        spd = speed if isinstance(speed, dict) else {sid: speed for sid in goals}
+        assert all(v > 0 for v in spd.values())
         for sid in goals:
             self._assert_writable_id(sid)
         self._advance()
@@ -110,7 +111,7 @@ class MockBus(BusBase):
         for sid, c in goals.items():
             self.writes.append((sid, REG_GOAL_POS, int(c)))
             self.goal[sid] = float(c)
-            self.speed[sid] = float(speed)
+            self.speed[sid] = float(spd[sid])
             self.torque[sid] = True  # assumed (unverified on hardware): a goal write re-enables torque
 
     def _read(self, ids):

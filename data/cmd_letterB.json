@@ -3,7 +3,7 @@
   "centre": [
     260,
     0,
-    150
+    84.3
   ],
   "R": 25,
   "T_s": 35.74,
@@ -24,7 +24,7 @@
     }
   },
   "model_source": "fitnet",
-  "model_file": "/home/agush/mainWS/workspaces/ACADS/AI for Robotics/HOP_3/models/fk_weights.json",
+  "model_file": "models/fk_weights.json",
   "checks": {
     "limits": true,
     "step": true,
@@ -32,8 +32,8 @@
     "finite": true
   },
   "max_step_deg": 0.087890625,
-  "min_z_mm": 99.86834914996044,
-  "z_floor_mm": 20,
+  "min_z_mm": 34.168349149960434,
+  "z_floor_mm": -45.7,
   "placeholder": false,
   "H": 100,
   "corners_k": [

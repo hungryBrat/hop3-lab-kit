@@ -1,0 +1,78 @@
+{
+  "synthetic": true,
+  "lag_ms": 80.0,
+  "hysteresis_halfwidth_deg": 0.5,
+  "mechanics_radial_mm": 2.0,
+  "print_scale": 0.97,
+  "sheet_to_robot": {
+    "yaw_deg": 3.0,
+    "R": [
+      [
+        0.9986295347545738,
+        -0.052335956242943835,
+        0.0
+      ],
+      [
+        0.052335956242943835,
+        0.9986295347545738,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "t_mm": [
+      240.0,
+      2.0,
+      40.0
+    ]
+  },
+  "plane_z_mm": 40.0,
+  "trace_sheet_fit": {
+    "centre_mm": [
+      0.07210789412603552,
+      -2.4448412348812565
+    ],
+    "R_mm": 51.629366906642495
+  },
+  "pen_robot_fit": {
+    "centre_mm": [
+      240.19996217665215,
+      -0.4377168296123273
+    ],
+    "R_mm": 51.62936690664192
+  },
+  "dh_meas_fit": {
+    "centre_mm": [
+      240.19967462530747,
+      -0.43800989698866033
+    ],
+    "R_mm": 49.629791589513545
+  },
+  "H_sheetmm_to_photo": [
+    [
+      12.027011875628059,
+      0.34759078544986116,
+      1516.5419136694313
+    ],
+    [
+      0.3534836573455845,
+      -11.272084927299954,
+      1928.8760250545652
+    ],
+    [
+      -6.971098903960047e-06,
+      0.0002403538663898692,
+      1.0
+    ]
+  ],
+  "files": {
+    "cmd": "data/synthetic/cmd_synth_z040.csv",
+    "run_log": "logs/synthetic/run_synth_z040_20261126_120000.csv",
+    "touchoff": "logs/synthetic/touchoff_20261126_115500.csv",
+    "photo": "data/synthetic/sheet_synth_z040.jpg",
+    "session": "data/synthetic/session_data_synth_circle.json"
+  }
+}

@@ -284,7 +284,8 @@ def main():
     print("== retarget round trip (letter B, valid under both J3 signs)")
     rt, _ = gen_letter_b_cmd(tmp, cfg, "rt")
     orig = hc.read_cmd(rt)[1]
-    hc.set_config_signs(1, 1, tmp / "config.json")
+    s1b = cfg["map"]["theta1"]["sign"]
+    hc.set_config_signs(s1b, 1, tmp / "config.json")
     before = ccmd.read_bytes()
     rc, out = run(["retarget_cmds.py", str(ccmd)], env)
     check("low circle under sigma3=+1 refused, file untouched",
@@ -299,7 +300,7 @@ def main():
     check("meta map_used updated", json.loads(rt.with_suffix(".json").read_text())["map_used"]["theta3"]["sign"] == 1)
     rc, _ = run(["safety.py", str(rt)], env)
     check("retargeted file passes safety", rc == 0)
-    hc.set_config_signs(1, -1, tmp / "config.json")
+    hc.set_config_signs(s1b, -1, tmp / "config.json")
     rc, _ = run(["retarget_cmds.py", str(rt)], env)
     back = hc.read_cmd(rt)[1]
     check("round trip restores original s/c", rc == 0 and np.allclose(back[:, 2:8], orig[:, 2:8], atol=1e-5))
@@ -331,7 +332,7 @@ def main():
           "DECISION: sigma3 = +1" in out and "cmd_letterB" in out and "no backup" in out)
     rc, out = run(["convention_test.py", "--mock", "--yes"], env)
     check("convention --yes -> sigma3=-1 -> PRIMARY letter B", rc == 0 and "PRIMARY data/cmd_letterB.csv" in out
-          and "already match" in out)
+          and ("already match" in out or s1b != 1))
     rc, out = run(["convention_test.py", "--mock", "--answers", "n"], env)
     check("declining a move stops without motion", rc == 2 and "not confirmed" in out)
 

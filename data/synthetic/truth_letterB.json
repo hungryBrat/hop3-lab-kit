@@ -1,0 +1,82 @@
+{
+  "synthetic": true,
+  "lag_ms": 80.0,
+  "backlash_halfwidth_deg": 0.5,
+  "drop_frac": 0.01,
+  "quantisation_counts": 1,
+  "seeds": [
+    101,
+    102,
+    103
+  ],
+  "mechanics_offset_yz_mm": [
+    0.6,
+    -1.375
+  ],
+  "mechanics_mm": 1.5002083188677497,
+  "sync_offset_s": -1.733,
+  "sync_convention": "t_run = t_video + sync_offset_s",
+  "fps": 30.0,
+  "n_frames": 1155,
+  "camera": {
+    "K": [
+      [
+        700.0,
+        0.0,
+        243.0
+      ],
+      [
+        0.0,
+        700.0,
+        316.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "R_world_to_cam": [
+      [
+        -0.05426774024272569,
+        0.9985264204661527,
+        0.0
+      ],
+      [
+        0.05410815705818294,
+        0.0029406607096838554,
+        -0.9985307505802501
+      ],
+      [
+        -0.9970593361022779,
+        -0.05418800739686293,
+        -0.05418800739686293
+      ]
+    ],
+    "centre_mm": [
+      720.0,
+      25.0,
+      175.0
+    ]
+  },
+  "B": {
+    "x_plane_mm": 260.0,
+    "spine_y_mm": -12.5,
+    "z_c_mm": 150.0,
+    "H_mm": 100.0,
+    "R_mm": 25.0,
+    "spine_length_mm": 100.0
+  },
+  "files": {
+    "cmd": "data/cmd_letterB.csv",
+    "run_logs": [
+      "logs/synthetic/run_letterB_20261127_100000.csv",
+      "logs/synthetic/run_letterB_20261127_100300.csv",
+      "logs/synthetic/run_letterB_20261127_100600.csv"
+    ],
+    "video": "data/synthetic/phone_letterB.mp4",
+    "video_truth": "data/synthetic/video_truth_letterB.csv",
+    "session": "data/synthetic/session_data_synth.json",
+    "board": "data/video_board.json"
+  }
+}

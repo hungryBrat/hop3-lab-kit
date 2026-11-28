@@ -31,7 +31,7 @@ Date ______  Team ______________  Start time ______  Port ______  PSU V ______
     + servo_offsets_reg31. Needs ids 1-3 ok + PROBE OK; "4 gripper: dead/ignored"
     is fine.  (fallback: $P kit_capture.py probe)
 [ ] Convention test: $P $C/convention_test.py  (answer y/N per move)
-      neutral tip height by tape = ______ mm (DH 398.6)   tape arrow +X0 on table
+      neutral tip height by tape = ______ mm (DH 332.9, measured from J2 axis = base height + 65.7 -> 398.6 above the table/base)   tape arrow +X0 on table
       sigma1 = ____ (s1->110, CCW from above = +1)
       sigma3 = ____ (s3->200, tilts toward +X0 = -1, away = +1)
       -> session/ (sigma1, sigma3, neutral_tip_height_mm); may edit config.json
@@ -47,7 +47,7 @@ Date ______  Team ______________  Start time ______  Port ______  PSU V ______
       $P $C/safety.py data/cmd_letterB.csv                       PASS required
       $P $C/run_traj.py data/cmd_letterB.csv --mode stream --dry   (read-only)
 [ ] B run #1 (in air, low torque):
-      $P $C/run_traj.py data/cmd_letterB.csv --mode stream --torque-limit 400 --dashboard
+      $P $C/run_traj.py data/cmd_letterB.csv --mode stream --decim 10 --dashboard
       -> logs/run_letterB_<ts>.csv ; rate ~50 Hz, dropped replies small
       Dashboard front view should show a B (y right, z up). Stutter -> --mode wait
       (fallback of the fallback: $P kit_capture.py play data/cmd_letterB.csv)

@@ -1,0 +1,154 @@
+{
+  "name": "letterB",
+  "runlog": "logs/run_letterB_20261127_192850.csv",
+  "cmdfile": "data/cmd_letterB.csv",
+  "placeholder": false,
+  "synthetic": false,
+  "mock": false,
+  "trajectory_kind": "letterB",
+  "inv_residual": {
+    "rms_mm": 0.0044777238844846872,
+    "max_mm": 0.010030453628813909,
+    "p95_mm": 0.009233416603918982
+  },
+  "nn_model_err": {
+    "rms_mm": 0.00053101047982788332,
+    "max_mm": 0.00074353736021866225,
+    "p95_mm": 0.0006980647864354159
+  },
+  "tracking_temporal": {
+    "rms_mm": 3.1031722688708276,
+    "max_mm": 7.0728542264020016,
+    "p95_mm": 5.59220526408957
+  },
+  "tracking_contour": {
+    "rms_mm": 1.2444133316952934,
+    "max_mm": 3.9960289825218669,
+    "p95_mm": 2.863566349081005
+  },
+  "mechanics": null,
+  "total": {
+    "rms_mm": 1.243377472882345,
+    "max_mm": 3.9971233553886742,
+    "p95_mm": 2.8651603334632938
+  },
+  "tracking_temporal_lagcomp": {
+    "rms_mm": 2.9900428034824813,
+    "max_mm": 6.4588572256129719,
+    "p95_mm": 5.2463851118402847
+  },
+  "total_basis": "DH(q_meas) - p_des (3-D contour; no video / pen ground truth)",
+  "mechanics_basis": "null: needs video (or pen) ground truth",
+  "lag_ms": 33.030201295121351,
+  "lag_ms_per_joint": [
+    4.5430354093486986,
+    12.868139870240345,
+    32.999430462553683
+  ],
+  "lag_method": "delay + backlash model fit (grid); xcorr lag kept as lag_xcorr_ms_per_joint",
+  "lag_xcorr_ms_per_joint": [
+    31.257971406086092,
+    -20.6186443199875,
+    -16.413349832614312
+  ],
+  "backlash_halfwidth_deg_per_joint": [
+    0.1,
+    0.35000000000000003,
+    0.15000000000000002
+  ],
+  "per_joint_rms_deg": [
+    0.14117263563024912,
+    0.50477766955893266,
+    0.23196937988335678
+  ],
+  "per_joint_rms_lagcomp_deg": [
+    0.13048291306019394,
+    0.495668548509014,
+    0.199177470324852
+  ],
+  "shape": {
+    "desired": {
+      "spine_straightness_rms_mm": 1.4417179401716858E-14,
+      "spine_length_mm": 100,
+      "spine_length_err_mm": 0,
+      "top_R_mm": 25.000005521308751,
+      "top_R_err_mm": 5.5213087506444936E-6,
+      "top_centre_err_mm": 1.1025143663800918E-5,
+      "bottom_R_mm": 25.000005521308751,
+      "bottom_R_err_mm": 5.5213087506444936E-6,
+      "bottom_centre_err_mm": 1.1025143660248204E-5,
+      "contour_rms_mm": 2.1815335989918437E-5,
+      "contour_max_mm": 7.2007429725421741E-5,
+      "hausdorff_mm": 0.0004903473580151037
+    },
+    "nn": {
+      "spine_straightness_rms_mm": 0.0027354324500331061,
+      "spine_length_mm": 99.998799892984891,
+      "spine_length_err_mm": -0.0012001070151086424,
+      "top_R_mm": 25.000166417164973,
+      "top_R_err_mm": 0.00016641716497289849,
+      "top_centre_err_mm": 0.0002961054709426209,
+      "bottom_R_mm": 25.0000228763798,
+      "bottom_R_err_mm": 2.2876379798475455E-5,
+      "bottom_centre_err_mm": 0.00014117009224260519,
+      "contour_rms_mm": 0.0033521431006557326,
+      "contour_max_mm": 0.0091087869664301987,
+      "hausdorff_mm": 0.0091087869664301987
+    },
+    "dh_cmd": {
+      "spine_straightness_rms_mm": 0.0026303583502728023,
+      "spine_length_mm": 99.99982386730116,
+      "spine_length_err_mm": -0.00017613269884009242,
+      "top_R_mm": 25.000381171203355,
+      "top_R_err_mm": 0.00038117120335456889,
+      "top_centre_err_mm": 0.00038630620567264948,
+      "bottom_R_mm": 25.000276221452616,
+      "bottom_R_err_mm": 0.0002762214526157436,
+      "bottom_centre_err_mm": 0.00044790127179537739,
+      "contour_rms_mm": 0.0033852332868282856,
+      "contour_max_mm": 0.0094847412364404537,
+      "hausdorff_mm": 0.0094847412364404537
+    },
+    "dh_meas": {
+      "spine_straightness_rms_mm": 0.20435168145906021,
+      "spine_length_mm": 97.187700389810274,
+      "spine_length_err_mm": -2.8122996101897257,
+      "top_R_mm": 23.446166822985646,
+      "top_R_err_mm": -1.5538331770143543,
+      "top_centre_err_mm": 1.9158503055838521,
+      "bottom_R_mm": 25.286164091190109,
+      "bottom_R_err_mm": 0.2861640911901091,
+      "bottom_centre_err_mm": 0.60719796429334016,
+      "contour_rms_mm": 1.2433939895701478,
+      "contour_max_mm": 3.9973354693636662,
+      "hausdorff_mm": 3.9973354693636662
+    },
+    "video": null
+  },
+  "circle_fit": null,
+  "hausdorff_mm": 3.9973354693636662,
+  "hausdorff_basis": "DH(q_meas) vs ideal B (letter plane)",
+  "n_rows": 1788,
+  "n_dropped": 0,
+  "dt_median_s": 0.019999999999999574,
+  "video": null,
+  "pen_trace": null,
+  "pen_offset_mm": null,
+  "segments": [
+    {
+      "name": "spine",
+      "s_start_mm": 0,
+      "s_end_mm": 100.00000000000001
+    },
+    {
+      "name": "top",
+      "s_start_mm": 100.00000000000001,
+      "s_end_mm": 178.53951540366427
+    },
+    {
+      "name": "bottom",
+      "s_start_mm": 178.53951540366427,
+      "s_end_mm": 257.07903080732859
+    }
+  ]
+}

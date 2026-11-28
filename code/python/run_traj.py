@@ -74,6 +74,10 @@ def main():
     ap.add_argument("--offscreen", action="store_true", help="dashboard on Agg, saves figures/dashboard_snapshot.png")
     ap.add_argument("--port")
     ap.add_argument("--torque-limit", type=int, help="RAM torque limit 1..1000 on IDs 1-3 for this run")
+    ap.add_argument("--speed", type=int, help="override stream speed (steps/s)")
+    ap.add_argument("--acc", type=int, help="override stream acc (1..254)")
+    ap.add_argument("--decim", type=int, default=1,
+                    help="stream: send a goal every N ticks, aimed N rows ahead, with per-joint speed matched to arrive on time")
     ap.add_argument("--dry", action="store_true", help="validate + read-only bus checks, no writes")
     ap.add_argument("--seed", type=int, help="mock RNG seed")
     args = ap.parse_args()
@@ -91,7 +95,9 @@ def main():
     goals_s = hc.counts_to_deg(goals_c, cfg)
     n = len(arr)
     name = hc.cmd_name(cmd_path)
-    st = cfg["stream"]
+    st = dict(cfg["stream"])
+    if args.speed: st["speed"] = args.speed
+    if args.acc: st["acc"] = args.acc
     rate = st["rate_hz"]
     print(f"safety PASS: {cmd_path} ({n} rows, {n / rate:.1f} s at {rate} Hz)")
     cmd_meta = hc.load_cmd_meta(cmd_path)
@@ -147,7 +153,7 @@ def main():
 
     meta = {"cmd_file": hc.rel(cmd_path), "mode": args.mode, "mock": args.mock, "synthetic": False,
             "config_snapshot": cfg, "offsets_reg31": offsets0, "port": port, "started": ts,
-            "torque_limit": args.torque_limit, "rate_hz_cmd": rate, "speed": st["speed"], "acc": st["acc"],
+            "torque_limit": args.torque_limit, "rate_hz_cmd": rate, "speed": st["speed"], "acc": st["acc"], "decim": args.decim,
             "n_rows_cmd": n, "cmd_meta": cmd_meta}
     stats = {"n_logged": 0, "comm_fail_reads": 0, "aborted": False, "abort_reason": None}
     f = open(log_path, "w")
@@ -166,6 +172,7 @@ def main():
         return hc.counts_to_deg([rd[i]["pos"] for i in ids], cfg) if ok else None
 
     t_stream = [None, None]
+    sent_c = [None]
 
     def seg_progress(k, t):
         if k in seg_at:
@@ -199,7 +206,16 @@ def main():
                     tw = time.perf_counter() - t0
                     if segs:
                         seg_progress(k, tw)
-                    bus.sync_write(dict(zip(ids, gc.tolist())), st["speed"], st["acc"], cfg["max_step_deg"])
+                    if args.decim <= 1:
+                        bus.sync_write(dict(zip(ids, gc.tolist())), st["speed"], st["acc"], cfg["max_step_deg"])
+                    elif k % args.decim == 0:
+                        ka = min(k + args.decim, n - 1)
+                        ga = goals_c[ka]
+                        dt = max(ka - k, 1) * period
+                        prev = sent_c[0] if sent_c[0] is not None else gc
+                        spd = {i: max(int(np.ceil(abs(ga[j] - prev[j]) / dt)), 5) for j, i in enumerate(ids)}
+                        bus.sync_write(dict(zip(ids, ga.tolist())), spd, 254, cfg["max_step_deg"])
+                        sent_c[0] = ga
                     rd, ok = bus.sync_read()
                     log(tw, k, gc, rd, ok)
                     if t_stream[0] is None:

@@ -30,7 +30,7 @@ Check the PSU label → session notes.
 ```
 $P $C/convention_test.py            # slow 5 deg/s, torque limit 300
 ```
-Every move asks `y/N`; answer N to stop. Prompts in order: neutral → measured tip height (DH 398.6) → s2→200 (tape the +X0 arrow on the table) → neutral → s1→110 "CCW from above?" → neutral → s3→200 "toward +X0?" → neutral.
+Every move asks `y/N`; answer N to stop. Prompts in order: neutral → measured tip height (DH 332.9, J2 origin) → s2→200 (tape the +X0 arrow on the table) → neutral → s1→110 "CCW from above?" → neutral → s3→200 "toward +X0?" → neutral.
 Writes session `sigma1`, `sigma3`, `neutral_tip_height_mm`. If the signs differ from the config, it asks before editing `config.json`. Then **always**:
 ```
 $P $C/retarget_cmds.py data/cmd_letterB.csv data/cmd_letterB_outside.csv
@@ -41,8 +41,8 @@ $P $C/retarget_cmds.py data/cmd_letterB.csv data/cmd_letterB_outside.csv
 ```
 $P $C/safety.py data/cmd_letterB.csv                                   # PASS required
 $P $C/run_traj.py data/cmd_letterB.csv --mode stream --dry             # read-only: pings, offsets, approach check
-$P $C/run_traj.py data/cmd_letterB.csv --mode stream --torque-limit 400 --dashboard   # run 1
-$P $C/run_traj.py data/cmd_letterB.csv --mode stream --dashboard       # runs 2 and 3 (repeatability)
+$P $C/run_traj.py data/cmd_letterB.csv --mode stream --decim 10 --dashboard   # run 1
+$P $C/run_traj.py data/cmd_letterB.csv --mode stream --decim 10 --dashboard       # runs 2 and 3 (repeatability)
 $P $C/run_traj.py data/cmd_letterB_outside.csv --mode stream --dashboard   # part (f), outside region, in air
 ```
 The run prints `segment 1/3 spine ... 2/3 top ... 3/3 bottom` as it goes. The dashboard shows the **front view** (y right, z up, as seen from +X0): desired B (black), NN-predicted (orange dashed), live DH(q_meas) (blue).

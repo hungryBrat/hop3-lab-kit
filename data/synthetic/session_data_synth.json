@@ -1,0 +1,36 @@
+{
+  "_comment": "SYNTHETIC session values (letter B). Treated as ground truth until the real session exists.",
+  "date": "2026-11-27 (SYNTHETIC)",
+  "port": "/dev/ttyACM0",
+  "usb_chip_lsusb": "1a86:55d3 QinHeng CH343 (SYNTHETIC)",
+  "psu_voltage_V": 7.4,
+  "servo_offsets_reg31": {
+    "1": 2,
+    "2": -5,
+    "3": 3,
+    "4": null
+  },
+  "sigma1": 1,
+  "sigma3": -1,
+  "neutral_tip_height_mm": 396.8,
+  "touchoff_log": null,
+  "fiducials_mm": null,
+  "paper_plane_z_mm": null,
+  "pen_offset_mm": null,
+  "printed_scale_check_mm": null,
+  "chosen_trajectory": "letterB",
+  "z_c_mm": 150.0,
+  "run_logs": [
+    "logs/synthetic/run_letterB_20261127_100000.csv",
+    "logs/synthetic/run_letterB_20261127_100300.csv",
+    "logs/synthetic/run_letterB_20261127_100600.csv"
+  ],
+  "sheet_photos": [],
+  "video": "data/synthetic/phone_letterB.mp4",
+  "notes": "SYNTHETIC",
+  "video_run": "logs/synthetic/run_letterB_20261127_100000.csv",
+  "video_board": "data/video_board.json",
+  "video_colour": "orange",
+  "use_pen": false,
+  "synthetic": true
+}

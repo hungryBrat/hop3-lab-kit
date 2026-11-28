@@ -1,0 +1,106 @@
+{
+  "name": "synth_z040",
+  "runlog": "logs/synthetic/run_synth_z040_20261126_120000.csv",
+  "cmdfile": "data/synthetic/cmd_synth_z040.csv",
+  "placeholder": false,
+  "synthetic": true,
+  "mock": false,
+  "trajectory_kind": "circle",
+  "inv_residual": {
+    "rms_mm": 0.21212882428351904,
+    "max_mm": 0.29496923568398958,
+    "p95_mm": 0.29198372962742669
+  },
+  "nn_model_err": {
+    "rms_mm": 0.2121292427692798,
+    "max_mm": 0.29494469851715077,
+    "p95_mm": 0.29200022137757553
+  },
+  "tracking_temporal": {
+    "rms_mm": 3.4407134416619227,
+    "max_mm": 4.3066689514935117,
+    "p95_mm": 4.190410437653088
+  },
+  "tracking_contour": {
+    "rms_mm": 1.3783515595932376,
+    "max_mm": 2.3508991839010891,
+    "p95_mm": 2.1544237638291621
+  },
+  "mechanics": {
+    "rms_mm": 1.9961458922239417,
+    "max_mm": 2.3101548294350978,
+    "p95_mm": 2.1846717988408355
+  },
+  "total": {
+    "rms_mm": 1.9218200548748654,
+    "max_mm": 3.8983876304656739,
+    "p95_mm": 3.505428091925133
+  },
+  "tracking_temporal_lagcomp": {
+    "rms_mm": 2.377847784265394,
+    "max_mm": 3.0546009834290393,
+    "p95_mm": 2.9197622066625581
+  },
+  "total_basis": "pen - p_des (xy contour; pen mapped by touch-off transform)",
+  "mechanics_basis": "DH_pen(q_meas) - pen trace (xy contour)",
+  "lag_ms": 80.410687656338041,
+  "lag_ms_per_joint": [
+    83.796106573289947,
+    67.7230943526427,
+    80.241568686660614
+  ],
+  "lag_method": "delay + backlash model fit (grid); xcorr lag kept as lag_xcorr_ms_per_joint",
+  "lag_xcorr_ms_per_joint": [
+    164.62429820928008,
+    185.67230655287813,
+    121.50378908415394
+  ],
+  "backlash_halfwidth_deg_per_joint": [
+    0.5,
+    0.55,
+    0.5
+  ],
+  "per_joint_rms_deg": [
+    0.67953276437588628,
+    0.76210088113478036,
+    0.93800008418256442
+  ],
+  "per_joint_rms_lagcomp_deg": [
+    0.4823691021785817,
+    0.48460853380812113,
+    0.48712323539490704
+  ],
+  "shape": null,
+  "circle_fit": {
+    "R_mm": 51.600220952494432,
+    "centre_err_mm": 0.60987291123468024,
+    "R_err_mm": 1.600220952494432,
+    "source": "pen"
+  },
+  "circle_fit_dh_meas": {
+    "R_mm": 49.624314549314342,
+    "centre_err_mm": 0.48413364769603778,
+    "R_err_mm": -0.3756854506856584,
+    "centre_mm": [
+      240.211089712321,
+      -0.43569085620850884
+    ]
+  },
+  "circle_fit_pen": {
+    "R_mm": 51.600220952494432,
+    "centre_err_mm": 0.60987291123468024,
+    "R_err_mm": 1.600220952494432,
+    "centre_mm": [
+      240.2059367038992,
+      -0.57405142787471419
+    ]
+  },
+  "hausdorff_mm": 3.8985327186067846,
+  "hausdorff_basis": "pen vs p_des (xy)",
+  "n_rows": 1001,
+  "n_dropped": 9,
+  "dt_median_s": 0.020000000000000018,
+  "video": null,
+  "pen_trace": "results/synthetic/trace_sheet_synth_z040.json",
+  "pen_offset_mm": 0
+}
